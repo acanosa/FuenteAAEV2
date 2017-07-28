@@ -1,0 +1,40 @@
+.iconoAgregar{
+	 background: url(imagenes/iconoAgregar.png);
+}
+
+
+/* Rules for sizing the icon. */
+.material-icons.md-18 { font-size: 18px; }
+.material-icons.md-24 { font-size: 24px; }
+.material-icons.md-36 { font-size: 36px; }
+.material-icons.md-48 { font-size: 48px; }
+
+/* Rules for using icons as black on a light background. */
+.material-icons.md-dark { color: rgba(0, 0, 0, 0.54); }
+.material-icons.md-dark.md-inactive { color: rgba(0, 0, 0, 0.26); }
+
+.material-icons.md-green { color: #e7de03;}
+.material-icons.md-green.md-inactive { color: rgba(255, 255, 255, 0.3); }
+
+.material-icons.md-red { color: rgba(255, 0, 0, 1);}
+.material-icons.md-red.md-inactive { color: rgba(255, 255, 255, 0.3); }
+
+/* Rules for using icons as white on a dark background. */
+.material-icons.md-light { color: rgba(255, 255, 255, 1); }
+.material-icons.md-light.md-inactive { color: rgba(255, 255, 255, 0.3); }
+
+
+
+.iconoAgregar2{
+	content: '';
+    display: block;
+    height: 40px;  /*height of icon */
+    width: 40px;  /*width of icon */
+    position: absolute;
+      /*where to replace the icon */
+    top: 0px;
+    left: -40px;
+      /*background */
+    background: #F8E6AE url("IconoAgregar.png") no-repeat 0px 0px;
+
+}

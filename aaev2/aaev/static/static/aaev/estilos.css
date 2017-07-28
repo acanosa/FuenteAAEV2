@@ -1,0 +1,92 @@
+.demo-card-square.mdl-card {
+  width: 420px;
+  height: auto;
+  text-align: -webkit-center;
+}
+
+
+.centrado{
+	text-align: center !important;
+}
+
+.mdl-card{
+	text-align: center;
+}
+
+.mdl-card > .supporting-text{
+	width: 100% !important;
+}
+.demo-card-wide.mdl-card {
+  width: 800px;
+}
+
+.demo-card-wide > .mdl-card__title {
+
+  align-items: center;
+  justify-content: center;
+}
+
+.demo-card-wide > .mdl-card__supporting-text {
+
+  align-items: center;
+  justify-content: center;
+
+}
+#boton{
+
+	height: 50px;
+}
+
+button {
+     background:none!important;
+     border:none; 
+     padding:0!important;
+     font: inherit;
+     /*border is optional*/
+     border-bottom:1px solid #444; 
+     cursor: pointer;
+}
+
+.success{
+	text-align: -webkit-center;
+	color: green !important;
+
+}
+
+label.error{
+	color: red;
+}
+
+.error{
+	color: red !important;
+}
+
+.info{
+	color: red;
+}
+
+.celdaTabla:hover{
+	cursor: pointer;
+	background-color: #8d8a8a;
+	color: #FFFFFF;
+}
+
+.celdaMateria:hover{
+	cursor: pointer;
+}
+
+#errorPlacement{
+	color: red;
+	font-size: 16px;
+}
+
+.unla{
+	background-color: #8F0129;
+	color: #FFFFFF !important; 
+	border: 1px solid black;
+}
+
+.unlaSub, .unlaSub:hover{
+	background-color: #8d8a8a !important;
+	color: #FFFFFF !important; 
+}

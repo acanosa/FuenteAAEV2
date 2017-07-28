@@ -1,0 +1,22 @@
+.success{
+	text-align: center;
+	color: green;
+	font-size: 16px;
+}
+
+.error{
+	text-align: center;
+	color: red;
+	font-size: 16px;
+}
+
+.info{
+	text-align: center;
+	color: red;
+	font-size: 16px;
+}
+
+.mdl-data-table{
+	width: auto;
+	height: auto;
+}

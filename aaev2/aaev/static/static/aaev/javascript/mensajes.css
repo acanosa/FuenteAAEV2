@@ -1,0 +1,14 @@
+.success{
+	text-align: center;
+	color: green;
+}
+
+.error{
+	text-align: center;
+	color: red;
+}
+
+.info{
+	text-align: center;
+	color: red;
+}
