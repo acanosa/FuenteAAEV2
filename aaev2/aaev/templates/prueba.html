@@ -1,0 +1,50 @@
+{% for uhe in unidadesExamen %}
+									{% for unidad in unidades %}
+										{% if not unidad|iguales:uhe.unidad_idunidad%}
+											{% for tipo in tipos %}
+												{% if not tipo|iguales:uhe.tipopregunta_idtipopregunta and not unidad|contarPreguntasPorTipo:tipo|vacio %}
+											<tr>
+												<td class="tablaCheck"> <input type="checkbox" id="tipoEditar{{unidad.idunidad}},{{tipo.idtipopregunta}}" value="{{tipo.idtipopregunta}}" onclick="agregarAListaEditar({{unidad.idunidad}},{{tipo.idtipopregunta}})" name="unidadestipos[]">
+												<td>{{unidad.nombre}}</td>
+												<td class="tablaCheck"> {{ tipo.nombretipo }}</td>
+												<td class="tablaCheck"> {{ unidad|contarPreguntasPorTipo:tipo }} </td>
+												<td class="tablaCheck"> 
+													<input type="number" min="1" max="{{ unidad|contarPreguntasPorTipo:tipo}}" name="cantidadAgregar[]"/>
+												</td>
+												<td class="tablaCheck">
+													<input type="number" min="1" max="10" name="valoresAgregar[]">
+												</td>
+											</tr>
+												{% endif %}
+									{% endfor %}
+										{% endif %}
+										
+									{% endfor %}
+									{% endfor %}
+
+
+
+
+
+
+									{% for unidad in unidades %}
+										{% for tipo in tipos %}
+											{% if unidad|contarPreguntasPorTipo:tipo|vacio %}
+											{% else %}
+											<tr>
+												<td class="tablaCheck"> <input type="checkbox" id="tipo{{unidad.idunidad}},{{tipo.idtipopregunta}}" value="{{tipo.idtipopregunta}}" onclick="agregarALista({{unidad.idunidad}},{{tipo.idtipopregunta}})" name="unidadestipos[]">
+												<td class="tablaCheck"> {{unidad.nombre}}</td>
+												<td class="tablaCheck"> {{ tipo.nombretipo }}</td>
+												<td class="tablaCheck"> {{ unidad|contarPreguntasPorTipo:tipo }} </td>
+												<td class="tablaCheck"> 
+													<input type="number" min="1" max="{{ unidad|contarPreguntasPorTipo:tipo}}" name="cantidadPreguntas[]"/>
+												</td>
+												<td class="tablaCheck">
+													<input type="number" min="1" max="10" name="valores[]">
+												</td>
+											</tr>
+											{% endif %}
+										{% endfor %}
+									{% endfor %}
+										</table>
+									{% endif %}

@@ -1,0 +1,27 @@
+<html>
+<head>
+
+</head>
+<script type="text/javascript">
+
+</script>
+<body>
+	<!-- creo tablas conteniendo el tipo de pregunta que tiene cada unidad, todas ocultas -->
+	{% for unidad in unidades %}
+		<table>
+			<tr>
+				<th> Tipo </th>
+				<th> Preguntas </th>
+			</tr>
+		{% for tipo in tipos %}
+			<tr>
+				<td> {{ tipo.nombre }}</td>
+			{% if {{ "unidad,tipo" | contartipos }} > 0 %}
+				<td> {{  | contartipos:"unidad,tipo"}} </td>
+			{% endif %}
+			</tr>
+		{% endfor %}
+		</table>
+	{% endfor %}
+</body>
+</html>

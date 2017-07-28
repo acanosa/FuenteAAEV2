@@ -1,0 +1,474 @@
+<html>
+<head>
+{% load staticfiles %}
+	<script src="{% static 'aaev/validaciones/editarExamenValidar.js' %}"></script>
+</head>
+<body>
+<script type="text/javascript">
+/*
+		$("#aceptarEdicion").on('click', function(){
+			$("#mensaje").val($("#descripcionEditarId").text());
+			var texto = $("#mensaje").val();
+			//alert(texto);
+			$("#formEditar").submit();
+		});
+*/
+
+	$(document).ready(function(){
+		$("#aceptarEdicion").click(function(event){
+			event.preventDefault();
+			limpiarDatos(event);
+
+			var datos = document.getElementsByName("datosAgregar[]");
+			var cantidades = document.getElementsByName("cantidadAgregar[]");
+			var valores = document.getElementsByName("valoresAgregar[]");
+
+			cantidades = obtenerListaConValores(cantidades);
+			valores = obtenerListaConValores(valores);
+			datos = obtenerListaConValores(datos);
+
+			//agrego seteos nuevos a una lista nueva, limpia y sin valores para que el servidor pueda agarrarla bien
+			for(i=0;i<cantidades.length;i++){
+				if (cantidades[i].value != null && cantidades[i].value != ''){
+					elemento = document.getElementById(cantidades[i].id);
+					var nuevoElemento = document.createElement('input'); 
+					nuevoElemento.type = "hidden";
+					nuevoElemento.id = elemento.id;
+					nuevoElemento.value = "" + elemento.value; 
+					nuevoElemento.name = "nuevasCantidades[]";
+					document.getElementById("nuevasCantidades").appendChild(nuevoElemento);
+				}else
+					console.log("NO HAY NADA" + cantidades[i].value);
+			}
+			for(i=0;i<valores.length;i++){
+				if(valores[i].value != null && valores[i].value != ''){
+					elemento = document.getElementById(valores[i].id);
+					var nuevoElemento = document.createElement('input'); 
+					nuevoElemento.type = "hidden";
+					nuevoElemento.id = elemento.id;
+					nuevoElemento.value = "" + elemento.value;
+					nuevoElemento.name = "nuevosValores[]"; 
+					document.getElementById("nuevosValores").appendChild(nuevoElemento);
+					//console.log("Nuevo elemento de valores: " + nuevoElemento);
+				}else
+					console.log("NO HAY NADA" + valores[i].value);
+			}
+			for(i=0;i<datos.length;i++){
+				if (datos[i].value != null && datos[i].value != ''){
+					elemento = document.getElementById(datos[i].id);
+					var nuevoElemento = document.createElement('input'); 
+					nuevoElemento.type = "hidden";
+					nuevoElemento.id = "nuevo" + elemento.id;
+					nuevoElemento.value = elemento.value;
+					nuevoElemento.name = "nuevosDatos[]"; 
+					document.getElementById("nuevosDatos").appendChild(nuevoElemento);
+					console.log(nuevoElemento);
+				}else
+					console.log("NO HAY NADA" + datos[i].value);
+			}
+			/*
+			lista = document.getElementsByName('cantidadPreguntasPuestos[]');
+			lista.each(function(){
+				console.log($(this).val());
+			});
+			console.log("AHORA VALORES");
+			lista = document.getElementsByName('valoresPuestos[]');
+			document.getElementsByName("").each(function(){
+				console.log($(this).val());
+			});
+			*/
+			//preparo los valores y cantPreguntas que ya estaban agregadas y el usuario edito
+			prepararEditados();
+			$("#formEditar").validate();
+			console.log(datos);
+			console.log(valores);
+			console.log(cantidades);
+			
+			console.log(datos.length);
+			console.log(valores.length);
+			console.log(cantidades.length);
+			
+			if(datos.length != valores.length || datos.length != cantidades.length
+			 || valores.length != cantidades.length) 
+			{	
+				$("#errorDatosEdicion").addClass("error");
+				$("#errorDatosEdicion").html("Faltan datos para agregar preguntas al examen");
+			}else{
+				//limpio mensajes de errores
+				$("#errorDatosEdicion").html("");
+				if ($("form[name='formEditar']").valid()){
+					$("#errorDatosEdicion").html("");
+					$("#formEditar").submit();
+				}
+			}
+
+
+		});
+	});
+	//preparo el envio de la cantidad de preguntas y los valores de los seteos que estan ya registrados en la BD y fueron (o no) editados
+	function prepararEditados(){
+		var listaElementos = document.getElementsByName("cantidadPreguntasPuestos[]");
+		//agarro todas las cantPreguntas de los seteos registrados (cambiados o no)
+		for(i=0;i<listaElementos.length;i++){
+			var elementoNuevo = document.createElement("input");
+			elementoNuevo.type="hidden";
+			elementoNuevo.name= "cantidadesEditar[]";
+			elementoNuevo.value = "" + listaElementos[i].value ;
+			//agrego al div q contiene la lista
+			document.getElementById("listaEditarCantidades").appendChild(elementoNuevo);
+		}
+		listaElementos = []
+		//agarro todos los valores de los seteos registrados (cambiados o no)
+		listaElementos = document.getElementsByName("valoresPuestos[]");
+		for(i=0;i<listaElementos.length;i++){
+			var elementoNuevo = document.createElement("input");
+			elementoNuevo.type="hidden";
+			elementoNuevo.name= "valoresEditar[]";
+			elementoNuevo.value = "" + listaElementos[i].value ;
+			document.getElementById("listaEditarValores").appendChild(elementoNuevo);
+		}
+	}
+
+	function quitarUnidad(event){
+		event.preventDefault();
+		var id = $("#idUnidadTipoBaja").val()
+		var row = $("#" + id);
+		var url = "quitarUnidadTipo/" + id + "/";
+		$.post(url,function(data){
+			$("#row2" + id).css("display", "none");
+			$("#row2" + id).slideUp();
+			$("#row2" + id).remove();
+			$("#unidadesExamen" + id).val("");
+			$("#idUnidadTipoBaja").empty();
+			$("#mensajeExitoQuitar").html(data);
+			$("#idUnidadTipoBaja").val(""); //limpio para evitar errores
+		});
+	}
+	
+	function agregarAListaEditar(idUnidad,idTipo, source){
+		var valor = idUnidad + ';' + idTipo;
+		var lista = document.getElementById('datosAgregar');
+		if (source.checked){ //si la casilla se marco agrego el elemento a la lista para agregar
+			var elementoNuevo = document.createElement("input");
+			elementoNuevo.type="hidden";
+			elementoNuevo.name= "datosAgregar[]";
+			elementoNuevo.value = "" + valor ;
+			elementoNuevo.id = valor;
+			document.getElementById("listaAgregarUnidades").appendChild(elementoNuevo);
+		}else{ //si estoy desmarcando la casilla, elimino el elemento ya que no se va a agregar
+			var borrar = document.getElementById(valor);
+			document.getElementById("listaAgregarUnidades").removeChild(borrar);
+		}
+		var cant = document.getElementById("tdCantPreguntasAgregar" + idUnidad);
+		var valor = document.getElementById("tdValoresAgregar" + idUnidad);
+
+		if(cant.style.display == 'none'){ //si mis celdas estan ocultas las muestro
+			$("#tdCantPreguntasAgregar" + idUnidad).slideDown();
+			$("#tdValoresAgregar" + idUnidad).slideDown();
+		}
+		else{ //este es el caso contrario, las vacio y las escondo (el vacio se hace para que no pase basura)
+			$("#cantPreguntasAgregar" + idUnidad).val(""); //vacio los campos en caso de ingreso
+			$("#valoresAgregar" + idUnidad).val("");
+			cant.style.display = 'none';
+			valor.style.display = 'none';
+		}
+	}
+
+	function limpiarDatos(event){
+		event.preventDefault();
+		var nuevo = new Array();
+		var cantidades= document.getElementsByName('cantidadAgregar[]');
+	  	for (var i = 0; i < cantidades.length; i++) {
+	    	if (cantidades[i]) {
+	    	  	nuevo.push(cantidades[i]);
+	    	}
+  		}
+  		$("#cantidadEnviar").val(nuevo);
+  		nuevo = []
+  		var valores= document.getElementsByName('valoresAgregar[]');
+	  	for (var i = 0; i < valores.length; i++) {
+	    	if (valores[i]) {
+	    	  	nuevo.push(valores[i]);
+	    	}
+  		}
+  		$("#valoresEnviar").val(nuevo);
+	}
+
+	function dialogoQuitarUnidad(event, idUnidadHasExamen){
+		seteos = [];
+		seteos = document.getElementsByName('seteos[]');
+		if(seteos.length > 1){
+			event.preventDefault();
+			//uso de dialogo para confirmar la baja de un examen
+			var dialog = document.getElementById("dialogoQuitarUnidad");
+			var unidad = $("#unidad" + idUnidadHasExamen).text();
+			var tipo = $("#tipo" + idUnidadHasExamen).text();
+			var cantidad = $("#cantidadPreguntasPuestos" + idUnidadHasExamen).val();
+			var valores = $("#valoresPuestos" + idUnidadHasExamen).val();
+			
+			if (! dialog.showModal) {
+			   dialogPolyfill.registerDialog(dialog);
+			}
+			$("#unidadDialogo").append(unidad);
+			$("#tipoDialogo").append(tipo);
+			$("#cantidadPreguntasDialogo").append(cantidad);
+			$("#valoresDialogo").append(valores);
+			document.getElementById("idUnidadTipoBaja").value = idUnidadHasExamen;
+			dialog.showModal(); //mostrar
+			dialog.querySelector('.close').addEventListener('click', function() {
+			      dialog.close(); //habilitar cierre del dialogo
+			      $("#unidadDialogo").text("Unidad: ");
+			      $("#tipoDialogo").text("Tipo: ");
+			      $("#cantidadPreguntasDialogo").text("Cantidad: ");
+			      $("#valoresDialogo").text("Valores: "); //vuelve a vaciarse el espacio reservado para el nombre
+			});
+			dialog.querySelector('.confirmar').addEventListener('click', function() {
+			      dialog.close(); //habilitar cierre del dialogo
+			      $("#unidadDialogo").text("Unidad: ");
+			      $("#tipoDialogo").text("Tipo: ");
+			      $("#cantidadPreguntasDialogo").text("Cantidad: ");
+			      $("#valoresDialogo").text("Valores: "); //vuelve a vaciarse el espacio reservado para el nombre
+			});
+		}
+	}	
+
+</script>
+<dialog class="mdl-dialog" id="dialogoQuitarUnidad">
+  <h4 class="mdl-dialog__title" id="tituloDialogo">Eliminar preguntas </h4>
+  <div class="mdl-dialog__content">
+    <p id="cuerpoDialogo">
+      ¿Seguro que quer&eacute;s eliminar esta cantidad de preguntas?
+    <br>
+    <br>
+    <strong id="unidadDialogo"> Unidad: </strong>
+    <br>
+    <strong id="tipoDialogo"> Tipo: </strong>
+    <br>
+    <strong id="cantidadPreguntasDialogo"> Cantidad: </strong>
+    <br>
+    <strong id="valoresDialogo"> Valores: </strong>
+    <br>
+    <br>
+    <strong style="color: #d8d808;"> ATENCI&Oacute;N: Va a cambiar la cantidad de preguntas totales y el puntaje total del examen </strong>
+    </p>
+    <input type="hidden" id="idUnidadTipoBaja" name="unidadTipoBaja" value=""/>
+  </div>
+  <div class="mdl-dialog__actions">
+    <button type="button" class="mdl-button close" style="color: red;">Cancelar</button>
+    <button type="button" onclick="quitarUnidad(event)" class="mdl-button confirmar" style="color: green;" >Confirmar</button>
+  </div>
+</dialog>
+
+		<div id="tarjetaEditar" class="demo-card-wide mdl-card mdl-shadow--16dp" style="margin-top: 7%;">
+			<div class="mdl-card__title mdl-card--expand">
+				<h5 class="mdl-card__title-text">Editar: {{examen.nombre}}</h5>
+			</div>
+
+			<div class="mdl-card__supporting-text">
+			<!-- Inicio del cuerpo de la tarjeta -->
+				<form method="POST" name="formEditar" action="editarExamen/{{examen.idexamen}}/" id="formEditar">
+				{% csrf_token %}
+				<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label " style="align: -webkit-center;">
+						<input type="text" class="mdl-textfield__input" id="nombre" name="nombre" autocomplete="off" value="{{examen.nombre}}"/>
+						<label for="nombre" class="mdl-textfield__label">Nombre del examen</label>
+				</div>
+				<input type="hidden" name="mensaje" id="mensaje" value=""/>
+				<br>
+				<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label " style="align: -webkit-center;">
+					<textarea name="descripcionEditar" type="text" class="mdl-textfield__input descripcionEditar" id="descripcionEditarId" rows="7">{{examen.descripcion}}</textarea>
+					<label class="mdl-textfield__label" for="descripcionEditar" >Descripci&oacute;n del examen</label>
+				</div>
+				<br>
+				<div id="exitoQuitar">
+					<h4 class="success" id="mensajeExitoQuitar"> </h4>
+				</div>
+				<div>
+					{% if unidadesExamen %}
+					<!-- en esta tabla estan las unidades con los tipos de pregunta del examen -->
+					<table class="mdl-data-table mdl-js-data-table" style="width: auto;">
+						<tr>
+							<th colspan="5" style="text-align: center"> 
+				    			<strong> <h5 style="color: black;"> Tipos de pregunta del examen </h5> </strong>
+							</th>
+						</tr>
+						<tr>
+							<th> Unidad </th>
+							<th> Tipo </th>
+							<th> Cantidad Deseada </th>
+							<th> Valor </th>
+							<th>
+								<button class="mdl-button mdl-js-button eliminarTodos" onclick="event.preventDefault()" id="eliminarExamen" name="eliminarTodos"> 	<i class="material-icons md-24 md-red">highlight_off</i> 
+								</button>
+							</th>
+						</tr>
+						{% for uhe in unidadesExamen %}
+							<div id="tablaRow{{uhe.idunidadhasexamen}}" >
+							<!-- Cada tabla va a estar contenida en un contenedor con su propio id, y agrupada en un array -->
+								<!-- Si el docente quiere modificar una unidad ya agregada, guardo todos los id de las mismas para luego en el lado del servidor poder actualizar-->
+								<input type="hidden" name="unidadesExamen[]" id="unidadesExamen{{uhe.idunidadhasexamen}}" value="{{uhe.idunidadhasexamen}}"/>
+
+								<tr id="row2{{uhe.idunidadhasexamen}}" name="seteos[]">
+									<td class="tablaCheck" id="unidad{{uhe.idunidadhasexamen}}">		{{uhe.unidad_idunidad}}
+									</td>
+									<td class="tablaCheck" id="tipo{{uhe.idunidadhasexamen}}">
+										{{ uhe.tipopregunta_idtipopregunta }}
+									</td>
+									<td class="tablaCheck"> 
+										<input id="cantidadPreguntasPuestos{{uhe.idunidadhasexamen}}" type="number" min="1" name="cantidadPreguntasPuestos[]" value="{{uhe.cantPreguntas}}"></td>
+									</td>
+									<td class="tablaCheck">
+										<input id="valoresPuestos{{uhe.idunidadhasexamen}}" type="number" min="1" name="valoresPuestos[]" value="{{uhe.valorTotal}}"></td>
+									</td>
+									<td> 
+
+									<button class="mdl-button mdl-js-button eliminarExamen" onclick="dialogoQuitarUnidad(event,{{uhe.idunidadhasexamen}})"> 
+										<i class="material-icons md-24 md-red">highlight_off</i> 
+									</button>
+									
+									</td>
+								</tr>
+							</div>
+							{% endfor %}
+							</table>
+							<!-- endfor 
+							div 
+							table-->
+						{% endif %}
+							<div>
+								<h5>Agregar mas tipos de pregunta</h5>
+								
+								<br>
+									<table class="mdl-data-table mdl-js-data-table" style="text-align: center;">
+										<tr>
+											<th> <input type="checkbox" onclick="toggle(this)" > </th>
+											<th> Unidad </th>
+											<th> Tipo </th>
+											<th> Preguntas </th>
+											<th> Cantidad Deseada </th>
+											<th> Valor </th>
+										</tr>
+									{% if disponibles %}
+										
+
+									{% for unidad in disponibles %}
+										{% if unidad|obtenerSublista%}
+										{% for tipo in unidad|obtenerSublista %}
+											{% if not unidad|contarPreguntasEnSublista:tipo|vacio %}
+												<tr id="rowAgregar{{unidad|getIdUnidad}}">
+													<td class="tablaCheck"> 
+													<input type="checkbox" id="tipoAgregar{{unidad|getIdUnidad}},{{tipo.idtipopregunta}}" value="{{tipo.idtipopregunta}}" onclick="agregarAListaEditar({{unidad|getIdUnidad}},{{tipo.idtipopregunta}},this)" name="unidadestipos[]">
+													</td>
+													<td>{{unidad|getNombreUnidad}}</td>
+													
+													<td class="tablaCheck"> {{ tipo.nombretipo }}</td>
+													
+													<td class="tablaCheck"> {{ unidad|contarPreguntasEnSublista:tipo }} </td>
+													
+													<td class="tablaCheck" style="display: none;" id="tdCantPreguntasAgregar{{unidad|getIdUnidad}}"> 
+														
+														<input type="number" min="1" max="{{ unidad|contarPreguntasEnSublista:tipo}}" name="cantidadAgregar[]" id="cantPreguntasAgregar{{unidad|getIdUnidad}}"/>
+													
+													</td>
+													<td class="tablaCheck"  style="display: none;" id="tdValoresAgregar{{unidad|getIdUnidad}}">
+													
+														<input type="number" min="1" max="10" name="valoresAgregar[]" id="valoresAgregar{{unidad|getIdUnidad}}">
+													
+													</td>
+												</tr>
+													{% endif %}
+										{% endfor %}
+										{% endif %}
+									{% endfor %}
+									</table>
+									{% else %}
+									<table>
+									{% for unidad in unidades %}
+										{% for tipo in tipos %}
+											{% if unidad|contarPreguntasPorTipo:tipo|vacio %}
+											{% else %}
+											<tr>
+												<td class="tablaCheck"> <input type="checkbox" id="tipo{{unidad.idunidad}},{{tipo.idtipopregunta}}" value="{{tipo.idtipopregunta}}" onclick="agregarALista({{unidad.idunidad}},{{tipo.idtipopregunta}})" name="unidadestipos[]"> </td>
+												<td class="tablaCheck"> {{unidad.nombre}}</td>
+												<td class="tablaCheck"> {{ tipo.nombretipo }}</td>
+												<td class="tablaCheck"> {{ unidad|contarPreguntasPorTipo:tipo }} </td>
+												<td class="tablaCheck"> 
+													<input type="number" min="1" max="{{ unidad|contarPreguntasPorTipo:tipo}}" name="cantidadPreguntas[]"/>
+												</td>
+												<td class="tablaCheck">
+													<input type="number" min="1" max="10" name="valores[]">
+												</td>
+											</tr>
+											{% endif %}
+										{% endfor %}
+									{% endfor %}
+									</table>
+									</table>
+									{% endif %}
+							</div>
+						<br>
+
+						<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label duracion" style="align: -webkit-center;">
+							<input type="text" class="mdl-textfield__input" pattern="-?[0-9]*(\.[0-9]+)?" max="5" maxlength="2" id="horas" name="horas" autocomplete="off"
+							title="Ingresa un numero del 0 al 5"/>
+							<label for="horas" class="mdl-textfield__label">Duraci&oacute;n (en horas)</label>
+						</div>
+						<br>
+						<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label duracion" >
+
+							<input type="text" class="mdl-textfield__input" pattern="-?[0-9]*(\.[0-9]+)?" max = "59" maxlength = "2" id="minutos" name="minutos" autocomplete="off"
+							title="Ingresa un numero del 0 al 59"/>
+							<label for="minutos" class="mdl-textfield__label">Duraci&oacute;n (en minutos)</label>
+
+						</div>
+						<br>
+						<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="align: -webkit-center;">
+							<label for="fechaCierreEditar">Fecha de cierre: </label>
+							<input type="date" class="mdl-textfield__input" id="fechaCierreEditar" name="fechaCierreEditar" autocomplete="off"/>
+						</div>
+						<br>
+						<span id="fechaNoValidaEdicion"></span>
+						<br>
+						</table>
+						<br>
+						<span id="errorDatosEdicion"></span>
+						<br>
+						<div id="submitEditar" style="margin-top: 5%;">
+
+							<button style="align: -webkit-center;" class="mdl-button mdl-js-button" id="aceptarEdicion" name="aceptarEdicion"> Confirmar </button>
+						</div>
+
+						<div id="submitCancelar" style="margin-top: 5%;">
+
+							<button style="align: -webkit-center;" class="mdl-button mdl-js-button" onclick="event.preventDefault();" id="cancelarEdicion" name="cancelar"> Cancelar </button>
+						</div>
+						<input type="hidden" name="visibilidad" id="visibilidad" value=""></input>
+						<div id="listaEditarCantidades">
+						</div>
+						<div id="listaEditarValores">
+						</div>
+						<div id="listaAgregarUnidades">
+								
+						</div>
+
+						<input type="hidden" value="" name="cantidadesPuestasEnviar[]" id="cantidadEnviar"/>
+						<input type="hidden" value="" name="valoresPuestosEnviar[]" id="valoresEnviar"/>
+						<input type="hidden" value="" name="cantidadEnviar[]" id="cantidadEnviar"/>
+						<input type="hidden" value="" name="valoresEnviar[]" id="valoresEnviar"/>
+						<div id="nuevasCantidades">
+
+						</div>
+						<div id="nuevosValores">
+
+						</div>
+						<div id="nuevosDatos">
+
+						</div>
+					</div>
+					
+				</form>
+			</div>
+		</div><!-- cuerpo tarjeta -->
+	</div><!-- tarjeta -->
+</body>
+
+</html>

@@ -1,0 +1,641 @@
+<html>
+<head>
+	<title>Examenes de {{materia.nombre}}</title>
+	{% load staticfiles %}
+	<script src=" {% static 'aaev/jquery.js' %}"></script>
+	<script src="{% static 'aaev/material.min.js' %}"></script>
+	<script src="{% static 'aaev/select/dist/mdl-selectfield.min.js' %}"></script>
+	<script src="{% static 'aaev/javascript/cerrarSesion.js' %}"></script>
+	<script src="{% static 'aaev/javascript/DjangoAjaxSetup.js' %}"></script>
+	<script src="{% static 'aaev/javascript/dialog-polyfill.js' %}"></script>
+	<script src="{% static 'aaev/javascript/moment.js' %}"></script>
+	<script src="{% static 'aaev/validaciones/agregarExamenValidar.js' %}"></script>
+	<script src=" {% static 'aaev/jquery.validate.min.js' %}"></script>
+	<link rel="stylesheet" href="{% static 'aaev/select/dist/mdl-selectfield.min.css' %}"></link>
+
+	<link rel="stylesheet" href="{% static 'aaev/material.css' %}"></link>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"></link>
+	<link rel="stylesheet" href=" {% static 'aaev/estiloIconos.css' %}"></link>
+	<link rel="stylesheet" href=" {% static 'aaev/mensajes.css' %}"></link>
+	<link rel="stylesheet" href=" {% static 'aaev/datetimepicker.css' %}"></link>
+	<link rel="stylesheet" href=" {% static 'aaev/dialog-polyfill.css' %}"></link>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<style>
+.mdl-color--red-900{
+	color: #8F0129;
+	background: #8F0129;
+}
+
+.color{
+	color: #901630;
+}
+.mdl-layout__header{
+	color:red;
+}
+
+
+.demo-card-wide.mdl-card {
+  width: 800px;
+}
+
+
+.demo-card-wide > .mdl-card__title {
+
+  align-items: center;
+  justify-content: center;
+}
+
+.demo-card-wide > .mdl-card__supporting-text {
+
+  align-items: center;
+  justify-content: center;
+
+}
+#boton{
+
+	height: 50px;
+}
+
+.success{
+	text-align: -webkit-center;
+	color: green;
+
+}
+
+.info{
+	color: red;
+}
+
+.celdaTabla:hover{
+	cursor: pointer;
+	background-color: #7BAFD4;
+	color: #FFFFFF;
+	display: block;
+}
+th{
+	text-align: -webkit-center;
+}
+td{
+    white-space: initial;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    -ms-word-break: break-all;
+    height: auto;
+    width: auto;
+    padding: auto;
+    content: attr(data-text);
+    -ms-hyphens: auto;
+	-moz-hyphens: auto;
+	-webkit-hyphens: auto;
+	hyphens: auto;
+	text-align: -webkit-center;
+}
+
+.texto{
+	white-space: initial;
+}
+
+.dialog{
+	width: auto;
+}
+
+.duracion{
+	width: auto;
+}
+
+.tablaCheck{
+	width: 100px;
+
+}
+
+.unidadElegir{}
+
+</style>
+<script type="text/javascript">
+
+	function obtenerListaConValores(lista){
+		listaCorregida = []
+		for (var i=0;i<lista.length;i++){
+			if(lista[i] != null && lista[i].value != ''){
+				//console.log(lista[i]);
+				listaCorregida.push(lista[i]);
+			}
+		}
+		return listaCorregida;
+	}
+
+	$(document).ready(function(){
+
+		$.validator.setDefaults({
+        	ignore: []
+    	});
+
+		$('body').on('click','#cancelarEdicion' , function(){
+			$("#detalles").slideUp();
+			$("#detalles").empty(); //elimino el formulario generado
+			
+		});
+
+		$("#botonAgregar").click(function(){
+			var datos = document.getElementsByName("datos[]");
+			var cantidades = document.getElementsByName("cantidadPreguntas[]");
+			var valores = document.getElementsByName("valores[]");
+
+			cantidades = obtenerListaConValores(cantidades);
+			valores = obtenerListaConValores(valores);
+			
+			numeros = []
+			for(i=0;i<cantidades.length;i++){
+				if (cantidades[i].value == null || cantidades[i].value == ''){
+					elemento = document.getElementById(cantidades[i]);
+					padre = elemento.parentNode();
+					padre.removeChild(elemento);
+				}
+			}
+			for(i=0;i<valores.length;i++){
+				if (valores[i].value == null || valores[i].value == ''){
+					elemento = document.getElementById(valores[i]);
+					padre = elemento.parentNode();
+					padre.removeChild(elemento);
+				}
+			}
+
+
+
+			if (datos.length == 0){
+				$("#errorDatos").addClass("error");
+				$("#errorDatos").html('Una vez que elegis la unidad,' + 
+			'elegi un tipo de pregunta, la cantidad y el valor de cada una, son obligatorios');
+			}else if(datos.length !== valores.length && datos.length !== cantidades.length) 
+			{	
+				//console.log("dadas");
+
+				$("#errorDatos").addClass("error");
+				$("#errorDatos").html("Faltan datos para agregar preguntas al examen");
+			}else{
+				$("#errorDatos").html("");
+			}
+
+
+
+
+			$("#agregarExamen").validate();
+			if ($("form[name='agregarExamen']").valid()){
+				$("#errorDatos").html("");
+				console.log(datos);
+				console.log(cantidades);
+				console.log(valores);
+				$("#agregarExamen").submit();
+			}
+
+		});
+
+		$("[type='number']").keypress(function (evt) { //evito que se pueda escribir en input type number
+	    	evt.preventDefault();
+		});
+
+	});
+	function esFechaMayor(fecha){
+		var fechaHoy = new Date();
+		fechaNueva = new Date(fecha);
+		//aca corro los minutos debido a que la clase Date tiene otra Timezone...
+		//Sino muestra el dia anterior y eso es incorrecto
+		fechaNueva.setMinutes(fechaNueva.getMinutes() + fechaNueva.getTimezoneOffset());
+		if(fechaNueva >= fechaHoy)
+			return true;
+		else
+			return false;
+	}
+
+	//muestra los tipos de pregunta para X unidad
+	function mostrarTipos(idUnidad){ // al elegir la unidad para el examen muestro su tabla de tipos de pregunta que contiene
+		var elemento = document.getElementById("tablaTipo" + idUnidad);
+			if (elemento.style.display == 'none'){
+				elemento.style.display = "inline";
+			}else{
+				elemento.style.display = 'none';
+			}
+	}
+
+	
+
+
+	
+
+	
+	//esto verifica que la fecha de cierre del examen a mostrar no este vencida. Se activa
+	// al querer cambiar la visibilidad del examen, usa el ID del examen 
+	function verificarFecha(event, idExamen){
+		event.preventDefault();
+
+		var fechaHoy = new Date(); //fecha actual
+		var stringFechaExamen = document.getElementById("n" + idExamen + "fechaCierre").innerText;
+		var array = stringFechaExamen.split('/');
+		// 0: dia 1: mes (se tiene que restar 1) 2: anio
+		//NOTA: los meses son del 0 al 11
+		var fechaExamen = new Date(array[2],array[1]-1,array[0]);
+			//fecha del examen
+		if (fechaMayor(fechaHoy,fechaExamen)){
+			generarDialogoFecha(idExamen); //pido nueva fecha de cierre
+		}else
+			examenVisible(event,idExamen); //procedo a actualizar base de datos
+	}
+
+	//envia un request que cambia la visibilidad del examen en la base de datos
+	function examenVisible(event, idExamen){
+		
+		url="" + idExamen + "/visible/";
+		$.post(url,function(data){
+			$("#" + idExamen + "visible").toggle();
+			$("#" + idExamen + "novisible").toggle();
+			//cambia el icono dependiendo de la visibilidad, se actualizan ambos elementos
+			//para evitar recargar la pagina
+			console.log(data);
+		})
+
+	}
+
+	function visible(){ //examen visible
+		document.getElementById("visibilidad").value= 1;
+	}
+
+	function noVisible(){ //examen no visible
+		document.getElementById("visibilidad").value= 0;
+	}
+
+	function exportarExamen(event,idExamen){
+		event.preventDefault();
+		url = "exportarExamen/" + idExamen + "/";
+		var form = $("#descargarArchivo");
+		
+		$.post(url,function(data){ //hago post para rellenar los datos de la descarga
+			var form = $("#descargarArchivo");
+			$("#descarga").val(data); //agrego dat al form oculto para enviar
+			$("#descargarArchivo").attr('action',url);
+			form.submit(); //hago submit de ese form para descargar
+		});
+		
+	}
+
+	//dialogo de confirmacion para eliminar un examen...
+	function dialogo(event, idExamen){
+		event.preventDefault();
+		//uso de dialogo para confirmar la baja de un examen
+		var dialog = document.querySelector('dialog');
+		var titulo = dialog.querySelector('.mdl-dialog__title');
+		if (! dialog.showModal) {
+		   dialogPolyfill.registerDialog(dialog);
+		}
+		var nombre = document.getElementById("n" + idExamen + "nombre").innerText //agarro td
+		titulo.innerHTML = titulo.innerHTML + nombre;
+		document.getElementById("idExamenBaja").value = idExamen;
+		dialog.showModal(); //mostrar
+		dialog.querySelector('.close').addEventListener('click', function() {
+		      dialog.close(); //habilitar cierre del dialogo
+		      titulo.innerHTML = "Eliminar "; //vuelve a vaciarse el espacio reservado para el nombre
+		});
+		dialog.querySelector('.confirmar').addEventListener('click', function() {
+		      dialog.close(); //habilitar cierre del dialogo
+		      titulo.innerHTML = "Eliminar "; //vuelve a vaciarse el espacio reservado para el nombre
+		});
+	}
+
+	$.fn.eliminar = function(event, idExamen){ //funcion de Jquery en una especie de variable
+			event.preventDefault();
+			url = idExamen + "/eliminarExamen/";
+			$.post(url, function(data){
+				
+			})
+			.done(function(data){
+				$("#" + idExamen).hide();
+				$("#mensajeEliminar").show();
+				$("#mensajeEliminar").html(data);
+				window.scrollTo(0, 0);
+				$("#" + idExamen).remove();
+				$("#detalles").slideUp();
+				$("#detalles").empty();
+			});
+	}
+
+	
+
+	function cargarTipos(idUnidad){
+		$.fn.cargar(idUnidad);
+	}
+
+	function eliminarExamen(event){
+		var idExamen = document.getElementById("idExamenBaja").value;
+		$("#detalles").slideUp(); //por si esta abierta la pestaña de edicion.
+		$.fn.eliminar(event,idExamen); //aca llamo a la funcion de arriba
+	}
+
+	function editarExamen(event, idExamen){
+		//genero un "formulario" de edicion por medio de javascript
+		event.preventDefault();
+		
+		url = "detalles/" + idExamen + "/";
+		$.post(url,function(data){
+
+		})
+		.done(function(data){
+			$("#detalles").empty();
+			$("#detalles").html(data);
+			componentHandler.upgradeAllRegistered();
+			$("#detalles").slideDown();
+		});
+
+	}
+	function agregarALista(idUnidad,idTipo,source){
+		var valor = idUnidad + ';' + idTipo;
+		var lista = document.getElementById('datos');
+		if(source.checked){
+			var elementoNuevo = document.createElement("input");
+			elementoNuevo.type="hidden";
+			elementoNuevo.name= "datos[]";
+			elementoNuevo.value = "" + valor ;
+			elementoNuevo.id="datosElemento" + valor;
+			document.getElementById("lista").appendChild(elementoNuevo);
+		}else{ //si estoy desmarcando la casilla, elimino el elemento ya que no se va a agregar
+			var borrar = document.getElementById("datosElemento" + valor);
+			borrar.remove();
+			//document.getElementById("lista").removeChild(borrar);
+			//console.log(document.getElementById("lista"));
+		}
+		var cant = document.getElementById("tdCantPreguntas" + idUnidad + idTipo);
+		var valor = document.getElementById("tdValores" + idUnidad + idTipo);
+
+		if(cant.style.display == 'none'){ //si mis celdas estan ocultas las muestro
+			$("#tdCantPreguntas" + idUnidad + idTipo).slideDown();
+			$("#tdValores" + idUnidad + idTipo).slideDown();
+		}
+		else{ //este es el caso contrario, las vacio y las escondo (el vacio se hace para que no pase basura)
+			$("#cantidadPreguntas" + idUnidad + idTipo).val(""); //vacio los campos en caso de ingreso
+			$("#valores" + idUnidad + idTipo).val("");
+			cant.style.display = 'none';
+			valor.style.display = 'none';
+		}
+	}
+
+	function verificarValores(event){
+		event.preventDefault();
+		console.log(document.getElementsByName("cantidadPreguntas[]").value);
+		console.log(document.getElementsByName("valores[]").value);
+	}
+
+
+	
+</script>
+<body>
+
+<!--dialogo de confirmacion al querer eliminar un examen -->
+
+<dialog class="mdl-dialog">
+  <h4 class="mdl-dialog__title" id="tituloDialogo">Eliminar </h4>
+  <div class="mdl-dialog__content">
+    <p id="cuerpoDialogo">
+      ¿Seguro que quer&eacute;s eliminar este examen?
+    </p>
+    <input type="hidden" id="idExamenBaja" name="idExamenBaja" value=""/>
+  </div>
+  <div class="mdl-dialog__actions">
+    <button type="button" class="mdl-button close" style="color: red;">Cancelar</button>
+    <button type="button" onclick="eliminarExamen(event)" class="mdl-button confirmar" style="color: green;" >Confirmar</button>
+  </div>
+</dialog>
+
+<!--Pagina -->
+<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+		<header class="mdl-layout__header mdl-color-text--red-900">
+			<div class="mdl-layout__header-row   mdl-shadow--8dp">
+				<span class="mdl-layout-title" style="color: white;"> <link rel="icon" 
+				href="C:\Users\ALE\Downloads\blanco.png"/> AAEV 2.0 / Docente {{docente.nombre}} {{docente.apellido}}</span>
+				<div class="mdl-layout-spacer"></div>
+				<nav class="mdl-navigation">
+					<a id="botonInicio" style="color: white" class="mdl-navigation__link" 
+					href="{% url 'aaev:inicioDocente' %} "> Inicio </a>
+				<form method="POST" action="{% url 'aaev:cerrarSesion'%}" name="form"  id="form">
+				{% csrf_token %}
+					<a id="boton" style="color: white; height: 50px;" class="mdl-navigation__link" onclick="cerrarSesion()" href="#">Cerrar sesi&#243;n</a>
+				</form>
+				</nav>
+			</div>
+		</header>
+		<main class="mdl-layout__content" style="text-align: -webkit-center;" id="cuerpo">
+			<div class="page-content " style="margin-top: 6%">
+
+			<div class="demo-card-wide mdl-card mdl-shadow--8dp">
+				<div class="mdl-card__title mdl-card--expand">
+					<h5 class="mdl-card__title-text">{{materia.nombre}}: Lista de examenes</h5>
+				</div>
+				<div class="mdl-card__supporting-text" id="cuerpoTarjetaPreguntas">
+					<div id="vacio">
+					{% if messages %}
+						{% for message in messages %}
+							<h4 class="{{message.tags}}"> {{message}} </h4>
+						{% endfor %}
+					{% endif %}
+					</div>
+					<h4 id="mensajeEliminar" style="display: none; color: green;"> </h4>
+					{% if examenes %}
+						<table class="mdl-data-table mdl-js-data-table" id="tablaExamenes">
+							<thead><!-- tabla encabezado-->
+								<tr><!-- FILA-->
+									<th style="text-align: -webkit-center;">Nombre</th>
+									<th style="text-align: -webkit-center;">Preguntas</th>
+									<th style="text-align: -webkit-center;">Fecha de cierre</th>
+									<th colspan="4" style="text-align: -webkit-center;">Acciones</th>
+								</tr>
+							</thead>
+							<tbody><!-- tabla Cuerpo-->			
+								{% for examen in examenes %}
+								<tr style="text-align: center"; return false;" id="{{examen.idexamen}}">
+									<td class="mdl-data-table-cel--non-numeric nombreprueba" id="n{{examen.idexamen}}nombre" style="text-align: -webkit-center;"> {{examen.nombre}}</td>
+									<td class="mdl-data-table-cel--non-numeric" id="n{{examen.idexamen}}preguntas" style="text-align: -webkit-center;">{{examen.totalpreguntas}}</td>
+									<td class="mdl-data-table-cel--non-numeric texto" id="n{{examen.idexamen}}fechaCierre" style="text-align: -webkit-center;">{{ examen.fechacierre|date:"SHORT_DATE_FORMAT" }} </td>
+									<div class="mdl-layout-spacer"></div>
+									<td class="mdl-data-table-cel--non-numeric" style="text-align: -webkit-center;"> 
+										<button class="mdl-button mdl-js-button" onclick="editarExamen(event,{{examen.idexamen}}, '{{examen.nombre}}' )"> <i class="material-icons md-36 md-green">mode_edit</i> </button> 
+									</td> 
+									<td class="mdl-data-table-cel--non-numeric" style="text-align: -webkit-center;"> 
+										<button class="mdl-button mdl-js-button" onclick="examenVisible(event,{{examen.idexamen}})"> 
+											{% if examen.visible == 1 %}
+											<i class="material-icons" id="{{examen.idexamen}}visible" style="color: #5cd2ec;">visibility</i>
+											<i class="material-icons" style="display: none;" id="{{examen.idexamen}}novisible"> visibility_off </i>
+											{% else %}
+											<i class="material-icons" id="{{examen.idexamen}}visible" style="color: #5cd2ec; display: none;">visibility</i>
+											<i class="material-icons" id="{{examen.idexamen}}novisible"> visibility_off </i>
+											{% endif %}
+										</button>
+									</td>
+									<td class="mdl-data-table-cel--non-numeric" style="text-align: -webkit-center;"> <button class="mdl-button mdl-js-button eliminarExamen" onclick="dialogo(event, {{examen.idexamen}})" id="eliminarExamen" name="eliminarExamen"> <i class="material-icons md-36 md-red">highlight_off</i> </button> 
+									</td>
+									<td class="mdl-data-table-cel--non-numeric" style="text-align: -webkit-center;"> 
+										<button class="mdl-button mdl-js-button" onclick="exportarExamen(event,{{examen.idexamen}})" id="exportarExamen" name="exportarExamen"> 
+											<i class="material-icons md-36">
+												file_download		
+											</i>
+										</button> 
+									</td>
+								</tr>
+								{% endfor %}
+							{% else %}
+								<h4> No hay examenes en esta materia </h4>
+							{% endif %}
+						</tbody>
+					</table>
+				</div> <!--supporting text -->
+			</div> <!-- tarjeta lista de preguntas -->
+
+			<div id="detalles" style="display: none">
+
+
+			</div>
+
+			<div class="demo-card-wide mdl-card mdl-shadow--8dp" style="margin-top: 5%; margin-bottom: 5%;">
+				<div class="mdl-card__title mdl-card--expand">
+					<h5 class="mdl-card__title-text">Agregar examen</h5>
+				</div>
+				<form name="agregarExamen" action="agregarExamen/" id="agregarExamen" method="POST">
+				<div class="mdl-card__supporting-text" style="text-align: -webkit-center;">
+					{% csrf_token %}
+						<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label " style="align: -webkit-center;">
+							<input type="text" class="mdl-textfield__input" id="nombre" name="nombre" autocomplete="off"/>
+							<label for="nombre" class="mdl-textfield__label">Nombre del examen</label>
+						</div>
+						<br>
+						<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label " style="align: -webkit-center;">
+							<label class="mdl-textfield__label" for="desc" >Descripci&oacute;n del examen</label>
+							<textarea type="text" class="mdl-textfield__input" id="desc" name="desc" autocomplete="off" rows="7"></textarea>
+						</div>
+						<br>
+						<span id="errorUnidades"></span>
+						<br>
+						<table class="mdl-data-table mdl-js-data-table" id="tablaUnidadesElegir">
+							<thead>
+								<tr>
+									<th> Elegir </th>
+									<th style="text-align: -webkit-center;">Nombre</th>
+								</tr>
+							</thead>
+							<tbody>
+								 {% for unidad in unidades %}
+								 	<tr>
+							    		<td class="mdl-data-table-cel--non-numeric unidadElegir" style="text-align: -webkit-center;"> <input type="checkbox" id="{{unidad.idunidad}}" onclick ="mostrarTipos({{unidad.idunidad}})" value="{{unidad.idunidad}}" name="unidades[]"/> </td>
+							    		<td class="mdl-data-table-cel--non-numeric" style="text-align: -webkit-center;" >{{unidad.nombre}}</td>
+							    	</tr>
+							    {% endfor %}
+							</tbody>
+						</table>
+						<br>
+						<div style="text-align: center" id="tablas">
+						<!-- creo tablas conteniendo el tipo de pregunta que tiene cada unidad, todas ocultas -->
+						{% for unidad in unidades %}
+							<div id="tablaTipo{{unidad.idunidad}}" style="display: none;">
+							<!-- Cada tabla va a estar contenida en un contenedor con su propio id, y agrupada en un array -->
+								{% if unidad|contarTodosTipos|vacio %}
+								<h4 class="error"> La unidad {{unidad.nombre}} no contiene preguntas </h4>
+								{% else %}
+									<span id="errorDatos"></span>
+									<h4> Tipos de pregunta para {{unidad.nombre}}</h4>
+									<table align="center" class="mdl-data-table mdl-js-data-table" style="text-align: -webkit-center;">
+										<tr>
+											<th> Elegir </th>
+											<th> Tipo </th>
+											<th> Preguntas </th>
+											<th> Cantidad Deseada </th>
+											<th> Valor </th>
+										</tr>
+									{% for tipo in tipos %}
+										{% if unidad|contarPreguntasPorTipo:tipo|vacio %}
+										{% else %}
+										<tr>
+											<td class="tablaCheck"> <input type="checkbox" id="tipo{{unidad.idunidad}},{{tipo.idtipopregunta}}" value="{{tipo.idtipopregunta}}" onclick="agregarALista({{unidad.idunidad}},{{tipo.idtipopregunta}}, this)" name="unidadestipos[]"/> </td>
+											<td class="tablaCheck"> {{ tipo.nombretipo }}</td>
+											<td class="tablaCheck"> {{ unidad|contarPreguntasPorTipo:tipo }} </td>
+											<td class="tablaCheck" id="tdCantPreguntas{{unidad.idunidad}}{{tipo.idtipopregunta}}" style="display: none;"> 
+
+												<input type="number" min="1" max="{{ unidad|contarPreguntasPorTipo:tipo}}" name="cantidadPreguntas[]" id="cantidadPreguntas{{unidad.idunidad}}{{tipo.idtipopregunta}}" step="1"/>
+											
+											</td>
+											<td class="tablaCheck" id="tdValores{{unidad.idunidad}}{{tipo.idtipopregunta}}" style="display: none;">
+
+												<input type="number" min="1" max="10" step="1" name="valores[]" id="valores{{unidad.idunidad}}{{tipo.idtipopregunta}}"/>
+											
+											</td>
+										{% endif %}
+										</tr>
+									{% endfor %}
+									</table>
+								{% endif %}
+							</div> <!-- tabla tipos -->
+						{% endfor %}
+						</div> <!-- tablas -->
+						<br>
+						<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label duracion" style="align: -webkit-center;">
+							<input type="text" class="mdl-textfield__input" pattern="-?[0-9]*(\.[0-9]+)?" max="5" maxlength="1" id="horas" name="horas" autocomplete="off" title="Ingresa un numero del 0 al 5"/>
+							<label for="horas" class="mdl-textfield__label">Duraci&oacute;n (en horas)</label>
+						</div>
+						<br>
+						<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label duracion" >
+
+							<input type="text" class="mdl-textfield__input" pattern="-?[0-9]*(\.[0-9]+)?" max = "59" maxlength = "2" id="minutos" name="minutos" autocomplete="off" title="Ingresa un numero del 0 al 59"/>
+
+							<label for="minutos" class="mdl-textfield__label">Duraci&oacute;n (en minutos)</label>
+						</div>
+						<br>
+						<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="align: -webkit-center;">
+							<label for="fechaCierre">Fecha de cierre: </label>
+							<input type="date" class="mdl-textfield__input" id="fechaCierre" name="fechaCierre" autocomplete="off"/>
+						</div>
+						<br>
+						<span id="fechaNoValida" class="error"></span>
+						<br>
+						<!-- error en caso de que no se elija ninguno de los 2 radio -->
+						<span id="errorRadio"></span>
+						<br>
+						<div style="align: -webkit-center;" id="radio">
+						<label for="radio" style="font-size: 16px;"> ¿Hacer visible? </label>
+							
+							<label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="opcion1" style="margin-right: 15px; margin-left: 15px;">
+								<input id="opcion1" name="opcionVisible[]" type="radio" class="mdl-radio__button" onclick="visible()">
+								<span class="mdl-radio__label" >Si</span>
+							</label>
+
+							<label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="opcion2">
+								<input id="opcion2" name="opcionVisible[]" type="radio" class="mdl-radio__button" onclick="noVisible()">
+								<span class="mdl-radio__label" >No</span>
+							</label>
+						</div>
+
+						<div id="submitAgregar" style="margin-top: 5%;">
+
+							<button style="align: -webkit-center;" class="mdl-button mdl-js-button" id="botonAgregar" name="agregar" onclick="event.preventDefault()"> Agregar examen </button>
+						</div>
+						<input type="hidden" name="visibilidad" id="visibilidad" value=""></input>
+						<div id="lista">
+							
+						</div>
+					</div>
+					</form>
+					<div id="mensaje" class="success">
+
+					</div>
+					</div> <!--supporting text -->
+			</div> <!--mdl card -->
+		</div> <!--content -->
+	</main>
+</div>
+
+	<input type="hidden" name="idmateria" id="idmateria" value="{{materia.idmateria}}"></input>
+	<input type="hidden" name="preguntaEditarId" id="idUnidadEditarId" value=""></input>
+	<input type="hidden" name="preguntaEditarNombre" id="idUnidadEditarNombre" value=""></input>
+	<form id="descargarArchivo" action="" method="post">
+    {% csrf_token %}
+    	<input id="descarga" type="hidden" name="descarga" />
+	</form>
+</body>
+
+
+
+</html>

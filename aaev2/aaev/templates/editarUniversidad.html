@@ -1,0 +1,24 @@
+<html>
+<body>
+
+<form method="POST" name="formEditar" action="editarUniversidad/{{universidad.iduniversidad}}/" id="formEditar">
+	{% csrf_token %}
+	<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label " style="align: -webkit-center;">
+		<input type="text" class="mdl-textfield__input" id="nombreEditar" name="nombreEditar" autocomplete="off" value="{{universidad.nombre}}"/>
+		<label for="nombreEditar" class="mdl-textfield__label">Nombre</label>
+	</div>
+	
+	<br>
+
+	<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label " style="align: -webkit-center;">
+		<input type="text" class="mdl-textfield__input" id="dominiomailEditar" name="dominiomailEditar" autocomplete="off" value="{{universidad.dominiomail}}"/>
+		<label for="dominiomailEditar" class="mdl-textfield__label">Dominio de la universidad (ejemplo: uni.edu.ar)</label>
+	</div>
+	<br>
+	<input type="hidden" id="idUniversidadEditar" name="universidadEditar" value="{{universidad.iduniversidad}}"/>
+	<button class="mdl-button mdl-js-button mdl-shadow--6dp" id="aceptarEdicion" name="aceptarEdicion" onclick="event.preventDefault();">Aceptar
+	</button>
+	<button style="margin-left: 3%;" class="mdl-button mdl-js-button mdl-shadow--6dp" id="cancelarEdicion" name="cancelarEdicion" onclick="event.preventDefault();">Cancelar</button>
+</body>
+</form>
+</html>

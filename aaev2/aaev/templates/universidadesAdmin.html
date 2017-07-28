@@ -1,0 +1,165 @@
+<html>
+<head>
+	<title>ADMIN: Universidades</title>
+	{% load staticfiles %}
+	<script src=" {% static 'aaev/jquery.js' %}"></script>
+	<script src="{% static 'aaev/material.min.js' %}"></script>
+	<script src="{% static 'aaev/select/dist/mdl-selectfield.min.js' %}"></script>
+	<script src="{% static 'aaev/javascript/universidadABM.js' %}"></script>
+	<script src="{% static 'aaev/javascript/cerrarSesion.js' %}"></script>
+	<link rel="stylesheet" href="{% static 'aaev/select/dist/mdl-selectfield.min.css' %}"></link>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"></link>
+	<link rel="stylesheet" href="{% static 'aaev/material.css' %}"></link>
+	<link rel="stylesheet" href=" {% static 'aaev/estiloIconos.css' %}"></link>
+	<link rel="stylesheet" href=" {% static 'aaev/mensajes.css' %}"></link>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<style>
+
+.success{
+	color: green;
+	font-size: 12px;
+	text-align: center;
+	width: auto;
+}
+
+.demo-card-wide.mdl-card {
+  width: 800px;
+}
+
+.demo-card-wide > .mdl-card__title {
+
+  align-items: center;
+  justify-content: center;
+
+}
+
+#form{
+	height: 50px;
+}
+
+.row{
+	text-align: -webkit-center;
+}
+
+.demo-card-wide > .mdl-card__supporting-text {
+
+  align-items: center;
+  justify-content: center;
+
+}
+
+
+</style>
+
+<body>
+
+<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+		<header class="mdl-layout__header">
+			<div class="mdl-layout__header-row  mdl-shadow--8dp">
+				<span class="mdl-layout-title" style="color: white;"> AAEV 2.0 / Administrador {{admin.nombre}} {{admin.apellido}}</span>
+				<div class="mdl-layout-spacer"></div>
+				<nav class="mdl-navigation">
+				<a id="botonInicio" style="color: white" class="mdl-navigation__link" 
+					href="{% url 'aaev:inicioAdmin' %} "> Inicio </a>
+				<form method="POST" action="{% url 'aaev:logoutAdmin'%}" name="form"  id="form">
+				{% csrf_token %}
+					<a id="boton" style="color: white;" class="mdl-navigation__link" onclick="document.getElementById('form').submit();" href="#">Cerrar sesi&#243;n</a>
+				</form>
+				</nav>
+			</div>
+		</header>
+		<main class="mdl-layout__content" style="text-align: -webkit-center;" id="cuerpo">
+			<div class="page-content " style="margin-top: 6%">
+			<div class="demo-card-wide mdl-card mdl-shadow--8dp">
+				<div class="mdl-card__title mdl-card--expand">
+					<h5 class="mdl-card__title-text">Universidades</h5>
+				</div>
+				<div class="mdl-card__supporting-text" id="cuerpoTarjetaUniversidades">
+					<div id="vacio">
+					{% if messages %}
+						{% for message in messages %}
+							<h4 class="{{message.tags}}"> {{message}} </h4>
+						{% endfor %}
+					{% endif %}
+					</div>
+					<div id="mensajeEliminar" style="display: none;">
+						<h4 class="success" id="success"></h4>
+					</div>
+					{% if universidades %}
+						<table class="mdl-data-table mdl-js-data-table" id="tablaUniversidades">
+							<thead><!-- tabla encabezado-->
+								<tr><!-- FILA-->
+									<th>Nombre de la Universidad</th>
+									<th colspan="2" style="text-align: center;"> Acciones </th>
+								</tr>
+							</thead>
+							<tbody><!-- tabla Cuerpo-->			
+								{% for universidad in universidades %}
+								<tr style="text-align: center"; return false;" id="{{universidad.iduniversidad}}">
+									<td class="mdl-data-table-cel--non-numeric" id="n{{universidad.iduniversidad}}" style="text-align: -webkit-center;">{{universidad.nombre}}</td>
+									<div class="mdl-layout-spacer"></div>
+									<td class="mdl-data-table-cel--non-numeric" style="text-align: -webkit-center;"> <button class="mdl-button mdl-js-button" onclick="editarUniversidad(event,{{universidad.iduniversidad}} )"> <i class="material-icons md-36 md-green">mode_edit</i> </button> </td>
+									<td class="mdl-data-table-cel--non-numeric" style="text-align: -webkit-center;"> <button class="mdl-button mdl-js-button" onclick="dialogoEliminar(event,{{universidad.iduniversidad}})"> <i class="material-icons md-36 md-red">highlight_off</i> </button> 
+									 </td>
+								</tr>
+								{% endfor %}
+							{% else %}
+								<h4> No hay universidades </h4>
+							{% endif %}
+						</tbody>
+					</table>
+					<div id="espacioEdicion">
+
+					</div> <!--Espacio edicion -->
+				</div> <!--supporting text -->
+			</div> <!-- tarjeta lista de universidades -->
+			<div class="demo-card-wide mdl-card mdl-shadow--8dp" style="margin-top: 5%; margin-bottom: 5%;">
+				<div class="mdl-card__title mdl-card--expand">
+					<h5 class="mdl-card__title-text">Agregar universidades</h5>
+				</div>
+				<div class="mdl-card__supporting-text" style="text-align: -webkit-center;">
+					<form action ="{% url 'aaev:agregarUniversidad' %}" name="agregarUniversidad" id="agregarUniversidad" method="POST">
+						{% csrf_token %}
+						<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+							<input type="text" class="mdl-textfield__input" id="nombre" name="nombre" autocomplete="off"/>
+							<label for="nombre" class="mdl-textfield__label">Nombre de la universidad</label>
+						</div>
+						<br>
+						<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+							<input type="text" class="mdl-textfield__input" id="dominiomail" name="dominiomail" autocomplete="off"/>
+							<label for="dominiomail" class="mdl-textfield__label">Dominio del email (ejemplo: uni.edu.ar)</label>
+						</div>
+						<br>
+							<button class="mdl-button mdl-js-button" id="agregar" name="agregar">Agregar universidad</button>
+					</form>
+					<div >
+						<h4 id="mensaje" style="font-size: 16px; color: green" > </h4>
+						<h4 id="errorAgregar" style="font-size: 16px; color:red"></h4>
+					</div>
+				</div> <!--supporting text -->
+			</div> 
+
+	</main>
+</div>
+	<input type="hidden" name="universidadEditarId" id="idUniversidadEditarId" value=""></input>
+	<input type="hidden" name="universidadEditarNombre" id="idUniversidadEditarNombre" value=""></input>
+
+<!-- dialogo de confirmacion para eliminar universidad -->
+<dialog class="mdl-dialog" id="dialogoEliminarUniversidad">
+  <h4 class="mdl-dialog__title" id="tituloDialogo">Eliminar </h4>
+  <div class="mdl-dialog__content">
+    <p id="cuerpoDialogo">
+      ¿Seguro que quer&eacute;s eliminar esta universidad?
+    </p>
+    <input type="hidden" id="idUniversidadBaja" name="universidadBaja" value=""/>
+  </div>
+  <div class="mdl-dialog__actions">
+    <button type="button" class="mdl-button close" style="color: red;">Cancelar</button>
+    <button type="button" onclick="eliminarUniversidad(event)" class="mdl-button confirmar" style="color: green;" >Confirmar</button>
+  </div>
+</dialog>
+
+</body>
+</html>
+

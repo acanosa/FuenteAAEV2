@@ -1,0 +1,122 @@
+<html style="text-align:center">
+<script language="JavaScript" type="text/javascript">
+
+	function verDetallesExamen(event,idExamen,descripcion){
+		
+		$("#descripcionExamen").empty()
+		$("#descripcionExamen").html(descripcion);
+		$("#idExamenRealizar").val(idExamen);
+		$("#confirmarRealizar").slideDown();
+
+	}
+
+	function cerrarDetallesExamen(event){
+		event.preventDefault();
+		$("#confirmarRealizar").slideUp();
+	}
+
+	$(document).ready(function(){
+		console.log("ready");
+	});
+
+	function buscarExamen(){
+		nombreBuscar = $("#nombreBuscar").val();
+		if (nombreBuscar != ''){
+			url = "buscarExamen/" + nombreBuscar + "/";
+			if (nombreBuscar != null || nombreBuscar == ''){
+				$.post(url, nombreBuscar,function(){
+
+				})
+				.done(function(data){
+					console.log(data);
+					if (data!= 'None'){
+						$("#mensajeErrorBusqueda").hide();
+						$("#tablaExamenesMateria").hide();
+						$("#resultados").slideUp(function(){
+							$("#resultados").empty();
+							$("#resultados").html(data);
+							componentHandler.upgradeAllRegistered();
+							$("#resultados").slideDown();
+						});
+					}else{
+						$("#mensajeErrorBusqueda").show();
+					}
+				});
+			}
+		}
+	}
+
+	$('body').on('click',"#mostrarTodos",function(){
+		$("#resultados").slideUp(function(){
+			$("#resultados").empty();
+			$("#tablaExamenesMateria").slideDown();
+		});
+	})
+
+</script>
+<div style="text-align:center;">
+
+	<div>
+		<h4>Buscar examen</h4>
+	</div>
+		<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+			<input class="mdl-textfield__input" type="text" id="nombreBuscar" name="nombreBuscar"/>
+			<label class="mdl-textfield__label" for="nombreBuscar">Nombre del examen</label>
+		</div>
+		<div style="margin-bottom:2%;">
+			<button class="mdl-button mdl-js-button mdl-shadow--8dp" onclick="buscarExamen()" id="buscarExamen" name="buscarExamen"> <i class="material-icons"> search </i> </button>
+		</div>
+
+	<div style="display: none;" id="mensajeErrorBusqueda">
+		<h5 style="color:red;"> No se encontr&oacute; el examen solicitado </h5>
+	</div>
+ 	<table id="tablaExamenesMateria" align="center" class="mdl-data-table mdl-js-data-table" style="margin-bottom: 5%;">
+ 		<tr>
+ 			<th class="mdl-data-table--cel-non-numeric" style="text-align: center;">Nombre</th>
+ 			<th>Duraci&oacute;n</th>
+ 			<th>Cantidad de preguntas</th>
+ 			<th style="text-align:center">Unidades</th>
+ 			<th style="text-align:center">Acciones</th>
+ 		</tr>
+ 		{% for examen in examenes %}
+			<tr>
+				<td class="mdl-data-table--cel-non-numeric" id="{{examen.idexamen}}nombreExamen">{{examen.nombre}}</td>
+				<td class="mdl-data-table--cel-non-numeric" id="{{examen.idexamen}}duracionExamen">{{examen.tiempoLimite}}</td>
+				<td style="text-align:center" class="mdl-data-table--cel-non-numeric" id="{{examen.idexamen}}cantidadPreguntasExamen">{{examen.totalpreguntas}}</td>
+				<td class="mdl-data-table--cel-non-numeric" id="{{examen.idexamen}}UnidadesExamen">
+					{% for nombre in examen|getUnidadesExamen %} 
+						<div style="text-align: center;">
+							{{nombre}}
+						</div>
+					{% endfor %}
+
+				</td>
+				<td class="mdl-data-table--cel-non-numeric" id="verExamen{{examen.idexamen}}">
+					<button class="mdl-button mdl-js-button mdl-button--ripple-effect mdl-shadow--8dp" onclick="verDetallesExamen(event,{{examen.idexamen}}, '{{examen.descripcion}}' )">Hacer</button>
+				</td>
+			</tr>
+		
+		{% endfor %}
+	</table>
+</div>
+
+	<div id="resultados" style="display: none;">
+	</div>
+
+	<div id="confirmarRealizar" style="display: none;">
+		<p id="descripcionExamen"></p>
+		<br>
+		<br>
+		<p>¿Realizar examen?</p>
+		<div class="mdl-card__actions mdl-card--border">
+			<form id="formRealizar" method="POST" action="{{materia.idmateria}}/examenes/realizarExamen/{{examen.idexamen}}">
+			{% csrf_token %}
+				<button class="mdl-button mdl-js-button mdl-button--ripple-effect mdl-shadow--8dp" style="margin-right: 5%;" onclick="document.getElementById('formRealizar').submit();">Si</button>
+				<button class="mdl-button mdl-js-button mdl-button--ripple-effect mdl-shadow--8dp" onclick="cerrarDetallesExamen(event)">No</button>
+				<input type="hidden" id="idExamenRealizar" name="idExamenRealizar" value=""/>
+			</form>
+			
+		</div>
+	</div>
+
+</html>

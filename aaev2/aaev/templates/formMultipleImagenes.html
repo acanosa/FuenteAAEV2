@@ -1,0 +1,153 @@
+<html>
+<style type="text/css">
+#subir{
+	display: none;
+}
+.mdl-button--file {
+  input {
+    cursor: pointer;
+    height: 100%;
+    right: 0;
+    opacity: 0;
+    position: absolute;
+    top: 0;
+    width: 300px;
+    z-index: 4;
+  }
+}
+
+.mdl-textfield--file {
+  .mdl-textfield__input {
+    box-sizing: border-box;
+    width: calc(100% - 32px);
+  }
+  .mdl-button--file {
+    right: 0;
+  }
+}
+</style>
+<script type="text/javascript">
+
+	document.getElementById("subir").onchange = function () {
+    	document.getElementById("uploadFile").value = this.files[0].name;
+	};
+
+	function cambiar(source){
+		source.value()
+	}
+
+
+	/*
+	*/
+	function agregarOtraCorrecta(event){
+		event.preventDefault();
+		var lista = document.getElementsByName("respuestasCorrectas[]");
+		console.log(lista);
+		contador = lista.length + 1;
+		console.log(contador);
+		var tabla = $("#tablaCorrectas");
+		var tr = $("<tr></tr>");
+		var td2 = $("<td></td>");
+		tr.append(td2);
+		var div= $("<div></div>");
+		var inputFile = $("<input type='file' name='imagenesCorrectas' id=imagenCorrecta" + contador +"/>");
+		var input = $("<input type='text' name='descripcionesCorrectas[]' id='correcta"+ contador +"'></input>");
+		var label = $("<label for='correcta"+ contador +"'></label").text("Descripción de la imagen");
+		td2.append(inputFile);
+		td2.append($("<br>"));
+		div.append(input);
+		div.append(label);
+		div.addClass("mdl-textfield mdl-js-textfield mdl-textfield--floating-label");
+		input.addClass("mdl-textfield__input");
+		label.addClass("mdl-textfield__label");
+		td2.addClass("mdl-data-table-cel--non-numeric");
+		td2.append(div);
+		tabla.append(tr);
+		componentHandler.upgradeAllRegistered();
+	}
+
+	function agregarOtraIncorrecta(event){
+		event.preventDefault();
+		var lista = document.getElementsByName("respuestasIncorrectas[]");
+		console.log(lista);
+		contador = lista.length + 1;
+		console.log(contador);
+		var tabla = $("#tablaIncorrectas");
+		var tr = $("<tr></tr>");
+		var td2 = $("<td></td>");
+		tr.append(td2);
+		var div= $("<div></div>");
+		var inputFile = $("<input type='file' name='imagenesIncorrectas' id=imagenIncorrecta" + contador +"/>");
+		var input = $("<input type='text' name='descripcionesIncorrectas[]' id='incorrecta"+ contador +"'></input>");
+		var label = $("<label for='incorrecta"+ contador +"'></label").text("Descripción de la imagen");
+		td2.append(inputFile)
+		td2.append($("<br>"));
+		div.append(input);
+		div.append(label);
+		div.addClass("mdl-textfield mdl-js-textfield mdl-textfield--floating-label");
+		input.addClass("mdl-textfield__input");
+		label.addClass("mdl-textfield__label");
+		td2.addClass("mdl-data-table-cel--non-numeric");
+		td2.append(div);
+		tabla.append(tr);
+		componentHandler.upgradeAllRegistered();
+	}
+
+</script>
+<body>
+	<div id="formMultipleChoice" style="text-align: -webkit-center;">
+		<table class="mdl-data-table mdl-js-data-table" id="tablaCorrectas">
+			<tr>
+			<th style="text-align: -webkit-center;">RESPUESTAS CORRECTAS</th>
+			</tr>
+			<tr>
+				<td class="mdl-data-table-cel--non-numeric" style="width: auto;"> 
+					<input type="file" name="imagenesCorrectas" id="subirCorrecta1"/>
+					<br>
+					<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label " style="align: -webkit-center;">
+						<input type="text" class="mdl-textfield__input" id="correcta1" name="descripcionesCorrectas[]" autocomplete="off"/>
+						<label for="correcta1" class="mdl-textfield__label">Descripci&oacute;n de la imagen </label>
+					</div>
+				</td>
+			</tr>
+		</table>
+		<div style="align: -webkit-center; margin-bottom: 2%;margin-top: 2%;">
+			<button class="mdl-button mdl-js-button" onclick="agregarOtraCorrecta(event);" id="AgregarOtra" >Agregar otra Respuesta correcta</button>
+		</div>
+
+		<table class="mdl-data-table mdl-js-data-table" id="tablaIncorrectas">
+			<tr>
+			<th style="text-align: -webkit-center;">RESPUESTAS INCORRECTAS</th>
+			</tr>
+			<tr>
+				<td class="mdl-data-table-cel--non-numeric">
+					<input type="file" name="imagenesIncorrectas" id="subirIncorrecta1"/>
+					<br>
+					<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label " style="align: -webkit-center;">
+						<input type="text" class="mdl-textfield__input" id="incorrecta1" name="descripcionesIncorrectas[]" autocomplete="off"/>
+						<label for="incorrecta1" class="mdl-textfield__label">Descripci&oacute;n de la imagen </label>
+					</div>
+				</td>
+			</tr>
+		</table>
+
+		<div style="align: -webkit-center; margin-bottom: 2%;margin-top: 2%;">
+			<button class="mdl-button mdl-js-button" onclick="agregarOtraIncorrecta(event);" id="AgregarOtra" >Agregar otra Respuesta incorrecta</button>
+		</div>
+	</div>
+
+	
+
+	<div id="correctas">
+	<input type="hidden" id="respuestaObligatoria" name="correctas[]" value=""/>
+	</div>
+
+	<div id="incorrectas">
+	<input type="hidden" name="incorrectas[]" value=""/>
+	<input type="hidden" name="incorrectas[]" value=""/>
+	</div>
+</body>
+
+
+
+</html>

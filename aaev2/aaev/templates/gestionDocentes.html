@@ -1,0 +1,310 @@
+<html>
+<head>
+<title> Admin: gesti&oacute;n de docentes </title>
+{% load staticfiles %}
+
+
+<script src=" {% static 'aaev/jquery.js' %}"></script>
+<script src="{% static 'aaev/material.min.js' %}"></script>
+<script src="{% static 'aaev/select/dist/mdl-selectfield.min.js' %}"></script>
+<script src=" {% static 'aaev/jquery.validate.min.js' %}"></script>
+<script src=" {% static 'aaev/jquery-validate-additional-methods.js' %}"></script>
+<link rel="stylesheet" href="{% static 'aaev/select/dist/mdl-selectfield.min.css' %}">
+<link rel="stylesheet" href="{% static 'aaev/material.css' %}"></link>
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"></link>
+<link rel="stylesheet" href=" {% static 'aaev/estiloIconos.css' %}"></link>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<script type="text/javascript">
+
+	function eliminarDocente(event,idDocente){
+		url = "eliminarDocente/" + idDocente + "/";
+		$.post(url,function(data){
+			$("#detallesDocente").slideUp("fast", function(){
+				$("#detallesDocente").empty();
+				$("#docente" + idDocente).slideUp();
+				$("#docente" + idDocente).remove();
+				$("#mensajeExito").html("");
+				$("#mensajeExito").html(data);
+				$("#mensajeExito").show();
+			});
+		});	
+	}
+
+	function eliminarTodos(event){
+		event.preventDefault();
+		url = "eliminarTodosDocentes/";
+		$.post(url,function(data){
+			$("#detallesDocente").slideUp("fast", function(){
+				$("#detallesDocente").empty();
+				$("#accionesDocentes").empty();
+				$("#cuerpoDocentes").empty();
+			//	var mensaje = $("<h4 style='color:red;'>No hay docentes aceptados. </h4>");
+				//$("#cuerpoDocentes").append(mensaje);
+				$("#mensajeDocentes").html("No hay docentes aceptados.");
+				$("#mensajeExito").html("");
+				$("#mensajeExito").html(data);
+				$("#mensajeExito").show();
+
+			});
+			$("#tablaDocentes").hide();
+			$("#contenedorDocentes").hide();
+			$("#botonEliminarTodos").hide();
+			$("#mensajeDocentes").show();
+		})
+		.fail(function(xhr, status, error) {
+ 	 	    /*var err = eval("(" + xhr.responseText + ")");
+			alert(err);
+			*/
+			alert(xhr.responseText);
+		});	
+	}
+
+	function dialogoTodos(event){
+		event.preventDefault();
+		//uso de dialogo para confirmar la baja de un examen
+		var dialog = document.querySelector('dialog');
+		var titulo = dialog.querySelector('.mdl-dialog__title');
+		if (! dialog.showModal) {
+		   dialogPolyfill.registerDialog(dialog);
+		}
+		dialog.showModal(); //mostrar
+		dialog.querySelector('.close').addEventListener('click', function() {
+		      dialog.close(); //habilitar cierre del dialogo
+		});
+		dialog.querySelector('.confirmar').addEventListener('click', function() {
+		      dialog.close(); //habilitar cierre del dialogo
+		});
+	}
+
+	function dialogoEliminar(event, idCarrera){
+		event.preventDefault();
+		//uso de dialogo para confirmar la baja de un examen
+		var dialog = document.getElementById('dialogoEliminar');
+		var nombreEliminar = document.getElementById("nombreEliminar");
+		var dniEliminar = document.getElementById("dniEliminar");
+		var titulo = dialog.querySelector('.mdl-dialog__title');
+		if (! dialog.showModal) {
+		   dialogPolyfill.registerDialog(dialog);
+		}
+		var nombre = document.getElementById("nombre" + idDocente).innerText //agarro td nombre
+		var dni = document.getElementById("nombre" + idDocente).innerText //agarro td dni
+
+		//agrego datos docente al dialogo...
+		titulo.innerHTML = titulo.innerHTML + nombre;
+		nombreEliminar.innerHTML = nombreEliminar.innerHTML + nombre;
+		dniEliminar.innerHTML = dniEliminar.innerHTML + dni
+		//agrego id para la funcion de eliminar
+		document.getElementById("idDocenteBaja").value = idDocente;
+		dialog.showModal(); //mostrar
+		dialog.querySelector('.close').addEventListener('click', function() {
+		      dialog.close(); //habilitar cierre del dialogo
+		      titulo.innerHTML = "Eliminar "; //vuelve a vaciarse el espacio reservado para el nombre
+		});
+		dialog.querySelector('.confirmar').addEventListener('click', function() {
+		      dialog.close(); //habilitar cierre del dialogo
+		      titulo.innerHTML = "Eliminar "; //vuelve a vaciarse el espacio reservado para el nombre
+		      nombreEliminar.innerHTML = "Nombre: ";
+		      dniEliminar.innerHTML = "DNI: ";
+		});
+	}
+
+	function detallesDocente(idDocente){
+		var url = "detallesDocente/" + idDocente + "/";
+		$.post(url, function(data){
+			$("#detallesDocente").slideUp("fast", function(){
+				$("#detallesDocente").empty();
+				$("#detallesDocente").html(data);
+				componentHandler.upgradeAllRegistered();
+				$("#detallesDocente").slideDown();
+			});
+		});
+	}
+
+	function getCookie(name) {
+			var cookieValue = null;
+			if (document.cookie && document.cookie !== '') {
+				var cookies = document.cookie.split(';');
+				for (var i = 0; i < cookies.length; i++) {
+					var cookie = jQuery.trim(cookies[i]);
+					// Does this cookie string begin with the name we want?
+					if (cookie.substring(0, name.length + 1) === (name + '=')) {
+						cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+						break;
+					}
+				}
+			}
+			return cookieValue;
+		}
+
+	$(document).ready(function(){//si hago click en una de las opciones del select se activa el ajax
+			//Si no usaba este seteo tiraba el error 403 (FORBIDDEN)
+		$.ajaxSetup({ 
+		     beforeSend: function(xhr, settings) {
+		         function getCookie(name) {
+		             var cookieValue = null;
+		             if (document.cookie && document.cookie != '') {
+		                 var cookies = document.cookie.split(';');
+		                 for (var i = 0; i < cookies.length; i++) {
+		                     var cookie = jQuery.trim(cookies[i]);
+		                     // Does this cookie string begin with the name we want?
+		                     if (cookie.substring(0, name.length + 1) == (name + '=')) {
+		                         cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+		                         break;
+		                     }
+		                 }
+		             }
+		             return cookieValue;
+		         }
+		             xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+		     } 
+		});
+	});
+
+</script>
+<style>
+#detallesRegistro{
+	display: none;
+}
+
+.solicitudes{
+    width: 40% !important;
+    display: inline-block;
+    vertical-align: top;
+}
+
+.demo-card-wide.mdl-card {
+  width: 800px;
+}
+
+#carrerasElegir{
+	width: inherit;
+}
+
+#boton{
+
+	height: 50px;
+}
+
+
+#elegirUniversidad{
+	width: auto;
+}
+
+.celdaTabla:hover{
+	cursor: pointer;
+}
+
+#aceptarTodos{
+	margin-right: 10%;
+}
+
+</style>
+<body>
+<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+		<header class="mdl-layout__header">
+			<div class="mdl-layout__header-row  mdl-shadow--8dp">
+				<span class="mdl-layout-title" style="color: white;"> AAEV 2.0 / Administrador {{admin.nombre}} {{admin.apellido}}</span>
+				<div class="mdl-layout-spacer"></div>
+				<nav class="mdl-navigation">
+				<a id="botonInicio" style="color: white" class="mdl-navigation__link" 
+					href="{% url 'aaev:inicioAdmin' %} "> Inicio </a>
+				<form method="POST" action="{% url 'aaev:logoutAdmin'%}" name="form"  id="form">
+				{% csrf_token %}
+					<a id="boton" style="color: white;" class="mdl-navigation__link" onclick="document.getElementById('form').submit();" href="#">Cerrar sesi&#243;n</a>
+				</form>
+				</nav>
+			</div>
+		</header>
+		<main class="mdl-layout__content" id="cuerpo">
+			<div class="page-content ">
+				<div style="margin-top: 6%;">
+				<div class="success">
+					<h4  style="display: none; text-align: center; color:green" id="mensajeExito"></h4>
+				</div>
+					<h4 id="mensajeGestion"></h4>
+				<div id="contenedorDocentes">
+					<div style="text-align:center;">
+						<div class="demo-card-wide mdl-card mdl-shadow--8dp solicitudes"  style="margin-bottom: 5%;" id="tarjetaDocentes">
+								<div  class="mdl-card__title mdl-card--expand"> 
+									<h5 class="mdl-card__title-text"> Docentes del sistema </h5>
+								</div>
+								<div class="mdl-card__supporting-text" style="text-align: -webkit-center;">
+								{% if docentes %} 
+									<div id="espacioDocentes">
+											<table class="mdl-data-table mdl-js-data-table" id="tablaDocentes" style="width: auto; margin-bottom: 5%;">
+											<thead>
+												<tr>
+													<th class="mdl-data-table-cel--non-numeric"> DNI </th>
+													<th class="mdl-data-table-cel--non-numeric"> Nombre y apellido </th>
+												</tr>
+											</thead>
+											<tbody>
+											{% for docente in docentes %}
+											
+												<tr id="docente{{docente.iddocente}}">
+													<td id="dni{{docente.iddocente}}" class="celdaTabla" style="text-align:center;" 
+														onclick="detallesDocente({{docente.iddocente}})">
+													{{docente.dni}}
+													</td>
+													<td id="nombre{{docente.iddocente}}" class="celdaTabla" style="text-align:center;" onclick="detallesDocente({{docente.iddocente}})">
+													{{docente.nombre}} {{docente.apellido}}
+													</td>
+												</tr>
+											{% endfor%}
+											</tbody>
+											</table>
+										</div> <!--tabla -->
+									</div> <!--cuerpo tarjeta -->
+									<div class="mdl-card__actions mdl-card--border" style="text-align: center;">
+										
+										<button name="eliminarTodos" id="eliminarTodos" value="Rechazar" class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-shadow--8dp" onclick="dialogoTodos(event)" id="botonEliminarTodos"> 
+										Eliminar todos
+										</button>
+									</div><!--acciones tarjeta -->
+							</div> <!-- contenedor tarjeta -->
+						{% else %}
+						<h4 id="mensajeDocentes" style="color: red; text-align: center;">No hay docentes aceptados.</h4>
+						<!-- </div>  supporting text -->	
+					</div> <!--tarjeta -->
+						{% endif %}
+					</div> <!-- supporting text -->	
+					<!-- detalles docente -->
+					<div id="detallesDocente" style="text-align:center; margin-top: 5%;">
+						
+					</div><!-- detalles -->
+				</div> <!--Contenedor docentes -->
+
+				</div> <!--contenido principal -->
+<!--dialogo de confirmacion para eliminar a todos-->
+<dialog class="mdl-dialog">
+  <h4 class="mdl-dialog__title" id="tituloDialogo">Eliminar a todos</h4>
+  <div class="mdl-dialog__content">
+    <p id="cuerpoDialogo">
+      ¿Seguro que quer&eacute;s eliminar a todos los docentes? Se perder&aacute;n todos sus datos
+    </p>
+  </div>
+  <div class="mdl-dialog__actions">
+    <button type="button" class="mdl-button close" style="color: red;">Cancelar</button>
+    <button type="button" onclick="eliminarTodos(event)" class="mdl-button confirmar" style="color: green;" >Confirmar</button>
+  </div>
+</dialog>
+<!-- fin del dialogo para eliminar a todos-->
+
+<!--dialogo de confirmacion para eliminar UN solo docente-->
+<dialog class="mdl-dialog" id="dialogoEliminar">
+  <h4 class="mdl-dialog__title" id="tituloDialogo">Eliminar a </h4>
+  <div class="mdl-dialog__content">
+    <p id="cuerpoDialogo">
+      ¿Seguro que quer&eacute;s eliminar a este docente?
+      <span id="nombreEliminar">Nombre y apellido: </span>
+      <span id="dniEliminar">DNI: </span>
+    </p>
+  </div>
+  <div class="mdl-dialog__actions">
+    <button type="button" class="mdl-button close" style="color: red;">Cancelar</button>
+    <button type="button" onclick="eliminarDocente(event)" class="mdl-button confirmar" style="color: green;" >Confirmar</button>
+  </div> 
+</dialog> <!-- Fin de dialogo para eliminar 1 docente -->
+</body>
+</html>

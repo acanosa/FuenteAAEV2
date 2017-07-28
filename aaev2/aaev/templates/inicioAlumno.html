@@ -1,0 +1,389 @@
+<html>
+<head>
+
+<title> Alumno: {{alumno.nombre}} {{alumno.apellido}}</title>
+{% load staticfiles %}
+
+
+<script src=" {% static 'aaev/jquery.js' %}"></script>
+<script src="{% static 'aaev/material.min.js' %}"></script>
+<script src="{% static 'aaev/select/dist/mdl-selectfield.min.js' %}"></script>
+<script src=" {% static 'aaev/jquery.validate.min.js' %}"></script>
+<script src=" {% static 'aaev/jquery-validate-additional-methods.js' %}"></script>
+<link rel="stylesheet" href="{% static 'aaev/select/dist/mdl-selectfield.min.css' %}">
+<link rel="stylesheet" href="{% static 'aaev/material.css' %}"></link>
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<link rel="stylesheet" href="{% static 'aaev/estilos.css' %}"></link>
+</link>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<script language="JavaScript" type="text/javascript">
+
+	function verExamenes(event, idMateria){
+		event.preventDefault();
+		url = idMateria + "/examenes/" ;
+		$.post(url,function(data){
+			//vacio el div en caso de que haya habido otros examenes de otra
+			//o de la misma materia y que se apilen los html cargados
+			$("#examenesMateria").slideUp();
+			$("#examenesMateria").empty();
+			$("#examenesMateria").html(data);
+			componentHandler.upgradeAllRegistered();
+			$("#examenesMateria").slideDown();
+		})
+		.fail(function(error){
+			alert(error.responseText);
+		});
+	}
+
+	function detallesMateria(idMateria){
+		var url = "detallesMateria/" + idMateria + "/";
+		$.post(url, function(data){
+			$("#detallesMateria").slideUp("fast", function(){
+				var tabla = 
+				$("#detallesMateria").empty();
+				$("#detallesMateria").html(data);
+				componentHandler.upgradeAllRegistered();
+				$("#detallesMateria").slideDown();
+				
+			});
+		});
+	}
+
+	function enviarSolicitud(event, idMateria){
+		event.preventDefault();
+		var nombreMateria = $("#materia" + idMateria).text();
+		var url = "enviarSolicitud/" + idMateria + "/";
+			
+		$.post(url, function(data){
+			var tabla = document.getElementById("tablaMateriasSolicitadas");
+			if( tabla != null){
+				var tr = document.createElement('tr'); //creo un <tr> </tr>
+				tr.id= "materiaSolicitadaRow" + idMateria;
+				var td = document.createElement('td'); // creo un <td> </td>
+				td.className = "mdl-data-table-cel--non-numeric"; // le doy mis clases de CSS
+				td.innerHTML = nombreMateria; //le pongo el nombre de la unidad recien creada
+				td.id = "materiaSolicitada" + idMateria;
+				td.style="text-align: -webkit-center;";
+				tabla.appendChild(tr); // agrego este <tr> a la tabla abajo del todo
+				tr.appendChild(td);
+			}else{
+				$("#avisoSolicitadas").hide();
+				var tablaSolicitadas = document.createElement('table');
+				tablaSolicitadas.id="tablaMateriasSolicitadas";
+				tablaSolicitadas.className = "mdl-data-table mdl-js-data-table";
+				tablaSolicitadas.style="margin-bottom: 5%; text-align: center"
+				var trHeader = document.createElement('tr'); //creo un <tr> </tr>
+				var tdHeader = document.createElement('th');
+				tdHeader.innerHTML = "Materias solicitadas";
+				var tr = document.createElement('tr'); //creo un <tr> </tr>
+				tr.id= "materiaSolicitadaRow" + idMateria;
+				var td = document.createElement('td'); // creo un <td> </td>
+				td.className = "mdl-data-table-cel--non-numeric"; // le doy mis clases de CSS
+				td.innerHTML = nombreMateria; //le pongo el nombre de la unidad recien creada
+				td.id = "materiaSolicitada" + idMateria;
+				td.style="text-align: -webkit-center;";
+				document.getElementById("espacioMateriasSolicitadas").appendChild(tablaSolicitadas);
+				tablaSolicitadas.appendChild(trHeader);
+				trHeader.appendChild(tdHeader);
+				tablaSolicitadas.appendChild(tr); // agrego este <tr> a la tabla abajo del todo
+				tr.appendChild(td);
+			}
+			$("#detallesMateria").slideUp();
+			$("#detallesMateria").empty();
+			$("#divExito").show();
+			//$("#mensajeExito").hide();
+			$("#materia" + idMateria).hide();
+			$("#mensajeExito").html(data);
+		});
+		
+	}
+
+	
+
+	function cancelarSolicitud(event){
+		event.preventDefault();
+		$("#detallesMateria").slideUp(function(){
+			$("#detallesMateria").empty();
+		});
+	}
+
+
+	function getCookie(name){
+			var cookieValue = null;
+			if (document.cookie && document.cookie !== '') {
+				var cookies = document.cookie.split(';');
+				for (var i = 0; i < cookies.length; i++) {
+					var cookie = jQuery.trim(cookies[i]);
+					// Does this cookie string begin with the name we want?
+					if (cookie.substring(0, name.length + 1) === (name + '=')) {
+						cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+						break;
+					}
+				}
+			}
+			return cookieValue;
+		}
+
+
+	$(document).ready(function(){
+		//Si no usaba este seteo tiraba el error 403 (FORBIDDEN)
+		$.ajaxSetup({ 
+		     beforeSend: function(xhr, settings) {
+		         function getCookie(name) {
+		             var cookieValue = null;
+		             if (document.cookie && document.cookie != '') {
+		                 var cookies = document.cookie.split(';');
+		                 for (var i = 0; i < cookies.length; i++) {
+		                     var cookie = jQuery.trim(cookies[i]);
+		                     // Does this cookie string begin with the name we want?
+		                     if (cookie.substring(0, name.length + 1) == (name + '=')) {
+		                         cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+		                         break;
+		                     }
+		                 }
+		             }
+		             return cookieValue;
+		         }
+		             xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+		     } 
+		});
+
+		$("#submitSolicitud").on('click', function(event){
+			//$("#enviarSolicitudMateria").validate();
+			event.preventDefault();
+			var idmateria = $("#idmateria").val();
+			console.log("click");
+			//var url =iduniversidad  + "/" + idcarrera + "/" + idmateria + "/"; 
+			if ((idmateria==0 || idmateria == null) && (!$.trim($('textarea#mensaje').val())) ){
+				var html = "<h4> Por favor elegi una materia o escribi un mensaje. </h4>";
+				$("#errorPlacement").html(html);
+				$("#errorPlacement").show();
+				
+				console.log("IDMateria: " + $("#idmateria").val());
+				console.log("Mensaje: " + $('textarea#mensaje').val());
+			}else{
+				$("#enviarSolicitudMateria").submit();
+			}
+			
+		});
+
+		//si hago click en una de las opciones del select se activa el ajax
+		$("#menuUniversidad").on('change',function(){
+			var elegido= $("#menuUniversidad :selected").val();
+			if(elegido != 0){
+				$("#carrerasElegir").empty();
+				$("#materiasElegir").empty();
+				var iduniversidad= $("#menuUniversidad :selected").val();
+				
+				var datos = {'iduniversidad': iduniversidad };
+				$.ajax({
+					method: "POST",
+					url: iduniversidad + '/',  //metodo que trae la lista de carreras
+					data: {iduniversidad: iduniversidad}, //iduniversidad
+					datatype: 'html',
+					success: function(resp){
+						$("#carrerasElegir").html(resp); //imprimo el html armado, pero por alguna razon reimporta este html adentro
+						$("#carrerasElegir").slideDown();
+						componentHandler.upgradeAllRegistered();
+					},
+					error: function(xhr, status, error) {
+					  var err = eval("(" + xhr.responseText + ")");
+					  alert(err);
+					  console.log("Error");
+					}
+				});
+
+			}
+		});
+		//var tablaMaterias = $("#tablaMaterias").DataTable();
+		$('#materiaUnidad').click(function(){
+				var materiaUnidad = $("#materiaUnidad").val();
+				console.log(materiaUnidad);
+		});
+
+		$(document).on("change", '.menuMateria', function(event) { 
+				event.preventDefault();
+			    var id = $("#menuMateria :selected").val();
+				console.log(id);
+				if(id != 0){
+					$("#idmateria").val(id); //agrego el valor al form
+				}
+		});
+			
+
+	});
+	
+
+
+
+	
+	
+</script>
+<body>
+	<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+		<header class="mdl-layout__header">
+			<div class="mdl-layout__header-row  mdl-shadow--8dp">
+				<span class="mdl-layout-title" style="color: white;"> AAEV 2.0 / Alumno {{alumno.nombre}} {{alumno.apellido}}</span>
+				<div class="mdl-layout-spacer"></div>
+				<nav class="mdl-navigation">
+				<form method="POST" action="{% url 'aaev:cerrarSesion'%}" name="form"  id="form">
+				{% csrf_token %}
+					<a id="boton" style="color: white;" class="mdl-navigation__link" onclick="document.getElementById('form').submit();" href="#">Cerrar sesi&#243;n</a>
+				</form>
+				</nav>
+			</div>
+		</header>
+		<main class="mdl-layout__content" id="cuerpo" style="text-align: -webkit-center">
+			<div class="page-content">
+				<div style="margin-top: 6%;">
+					{% if messages %}
+						{% for message in messages %}
+						<div>
+							<h4 class="{{ message.tags }}"> {{message}} </h4>
+						</div>
+						{% endfor %}
+					{% endif %}
+				<div>
+					<div class="demo-card-wide mdl-card mdl-shadow--8dp">
+						<div  class="mdl-card__title mdl-card--expand"> 
+							<h5 class="mdl-card__title-text"> Mis materias </h5>
+						</div>
+						<div class="mdl-card__supporting-text" style="width:100%; text-align: -webkit-center;">
+							<div>
+								<p> Aca podes ver las materias a las que estas inscripto y sus examenes. </p>
+							</div>
+							<div>
+							<div id="espacioMateriasSolicitadas">
+								{% if materiasSolicitadas %}
+								<table class="mdl-data-table mdl-js-data-table" id="tablaMateriasSolicitadas" style="width: auto; margin-bottom: 5%;">
+									<thead>
+										<tr>
+											<th class="mdl-data-table-cel--non-numeric"> Materias solicitadas </th>
+										</tr>
+									</thead>
+									<tbody>
+										{% for materia in materiasSolicitadas %}
+											<tr>
+												<td id="materiaSolicitada{{materia.idmateria}}" style="text-align:center;">
+													{{materia.nombre}}
+												</td>
+											</tr>
+												
+										{% endfor%}
+									</tbody>
+								</table>
+								{%else%}
+									<h5 style="color:red;" id="avisoSolicitadas">
+										No hay materias solicitadas
+									</h5>
+								{% endif %}
+							</div> <!--Espacio Materias Solicitadas -->
+							{% if materias %}
+								<table class="mdl-data-table mdl-js-data-table" id="tablaMateriasActivas">
+									<thead>
+										<tr>
+											<th class="mdl-data-table-cel--non-numeric"> Materias Activas </th>
+											<th> Examenes </th>
+											<th> Realizados </th>
+										</tr>
+									</thead>
+									<tbody>
+										{% for materia in materias %}
+											{% if not materia.habilitado|vacio %}
+												<tr>
+												
+													<td class="mdl-data-table-cel--non-numeric centrado">{{materia.nombre}}</td>
+													<td id="{{materia.idmateria}}examenes" class="celdaTabla centrado" onclick ="verExamenes(event,{{materia.idmateria}})">
+													 {{ materia| contarExamenes}}
+													</td>
+													<td class="centrado">{{materia| contarExamenesHechos:alumno}}</td>
+												</tr>
+											{% endif %}
+										{% endfor %}
+									</tbody>
+								</table>
+							{% else %}
+								<p> No estas inscripto a ninguna materia por el momento </p>
+							{% endif %}
+						</div>
+					
+					</div>
+
+					<div id="examenesMateria" style="text-align:center">
+
+					</div>
+				</div>
+			</div>
+		</div>
+			<!-- Fin de bloque de materias inscriptas -->
+
+
+
+			<!-- fin de bloque de examenes de materia-->
+			<div class="demo-card-wide mdl-card mdl-shadow--8dp mdl-cell"  style="margin-bottom: 25%; margin-top: 5%; text-align:center">
+				<div class="mdl-card__title mdl-card--expand">
+					<h5 class="mdl-card__title-text"> Inscripción a Materia </h5>
+				</div>			
+				<div id="errorPlacement">
+
+				</div>
+					<div class="mdl-card__supporting-text" style="width: 100% !important; text-align:center !important;">
+						<br>
+						<div class="success" id="divExito">
+							<h4 id="mensajeExito" style="font-size: 16px; color: green;"></h4>
+						</div>
+						<br>
+						<h5> Hace click en una materia para inscribirte en ella. </h5>
+						{% if universidades %}
+							{% for universidad in universidades %}
+								{% if universidad|traerCarreras %}
+								<table class="mdl-data-table mdl-js-data-table" align="center">
+								<tr>
+									<th class="mdl-data-table-cel--non-numeric unla" style="text-align: center;">
+									{{ universidad }}
+									</th>
+								</tr>
+								
+									{% for carrera in universidad|traerCarreras%}
+									
+									{% if carrera|traerMaterias %}
+									<tr class="unlaSub"> <!--tabla de universidad-->
+										<td style="text-align: center;width: 80%;" class="mdl-data-table-cel--non-numeric">
+											Carrera: {{carrera}}
+										</td>
+									</tr>
+										{% for materia in carrera|traerMaterias%}
+											{% if materia not in materias and materia not in materiasSolicitadas %}
+											<tr>
+												<td class="mdl-data-table-cel--non-numeric celdaMateria" style="text-align: center;width: 80%;" id="materia{{materia.idmateria}}" onclick="detallesMateria({{materia.idmateria}})">
+													{{materia}}
+												</td>
+											</tr>
+												{% endif %}
+										{% endfor %}
+									{% endif %}
+									{%endfor%}
+								</table>
+								{% endif%}
+								<br>
+							{% endfor %}
+							{% else %}
+								 <strong>No hay carreras</strong>
+								 <br>
+							<br>
+							{% endif %}
+						<div id="detallesMateria" style="display:none;">
+
+						</div>
+						</div>
+					</div>
+				</div>
+				
+			</div>
+		</main>
+	</div>
+
+</body>
+</html>

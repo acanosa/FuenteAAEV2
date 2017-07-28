@@ -1,0 +1,326 @@
+<html>
+<head>
+<title> {{materia.nombre}}: solicitudes</title>
+{% load staticfiles %}
+
+
+<script src=" {% static 'aaev/jquery.js' %}"></script>
+<script src="{% static 'aaev/material.min.js' %}"></script>
+<script src="{% static 'aaev/select/dist/mdl-selectfield.min.js' %}"></script>
+<script src=" {% static 'aaev/jquery.validate.min.js' %}"></script>
+<script src=" {% static 'aaev/jquery-validate-additional-methods.js' %}"></script>
+<link rel="stylesheet" href="{% static 'aaev/select/dist/mdl-selectfield.min.css' %}">
+<link rel="stylesheet" href="{% static 'aaev/material.css' %}"></link>
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"></link>
+<link rel="stylesheet" href=" {% static 'aaev/estiloIconos.css' %}"></link>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<script type="text/javascript">
+
+//rechaza solicitud de registro y la elimina de la BD
+	function rechazarSolicitud(event,idSolicitud){
+		url = "rechazarSolicitud/" + idSolicitud + "/";
+		$.post(url,function(data){
+			$("#detallesSolicitud").slideUp("fast", function(){
+				$("#detallesSolicitud").empty();
+				$("#solicitud" + idSolicitud).slideUp();
+				$("#mensajeExito").html("");
+				$("#mensajeExito").html(data);
+				$("#mensajeExito").show();
+			});
+		});	
+	}
+
+	function rechazarTodas(event){
+		event.preventDefault();
+		url = "rechazarTodas/";
+		$("#solicitudes").slideUp();
+		
+		$.post(url,function(data){
+			$("#detallesSolicitud").slideUp("fast", function(){
+				$("#detallesSolicitud").empty();
+				//$("#cuerpoSolicitudesRegistro").empty()
+				$("#mensajeSolicitudes").show()
+				$("#mensajeSolicitudes").html("No hay solicitudes.")
+				
+				$("#tablaSolicitudes").hide();
+				$("#mensajeExito").html("");
+				$("#mensajeExito").html(data);
+				$("#mensajeExito").show();
+			});
+		});	
+
+	}
+
+	function aceptarTodas(event){
+		event.preventDefault();
+		url = "aceptarTodas/";
+		$("#solicitudes").slideUp();
+		
+		$.post(url,function(data){
+			$("#detallesSolicitud").slideUp("fast", function(){
+				$("#detallesSolicitud").empty();
+				$("#cuerpoSolicitudesRegistro").empty()
+				$("#mensajeSolicitudes").show()
+				$("#mensajeSolicitudes").html("No hay solicitudes.")
+				$("#mensajeExito").html("");
+				$("#mensajeExito").html(data);
+				$("#mensajeExito").show();
+			});
+		});	
+
+	}
+
+	function aceptarSolicitud(event,idSolicitud){
+		var url = "aceptarSolicitud/" + idSolicitud + "/";
+		$.post(url,function(data){
+			$("#detallesSolicitud").slideUp("fast", function(){
+				$("#detallesSolicitud").empty();
+				$("#solicitud" + idSolicitud).slideUp();
+				$("#mensajeExito").html("");
+				$("#mensajeExito").html(data);
+				$("#mensajeExito").show();
+			});
+		});	
+		
+	}
+
+	function dialogoRechazarTodos(event){
+		event.preventDefault();
+		//uso de dialogo para confirmar la baja de un examen
+		var dialog = document.querySelector('dialog');
+		var titulo = dialog.querySelector('.mdl-dialog__title');
+		if (! dialog.showModal) {
+		   dialogPolyfill.registerDialog(dialog);
+		}
+		dialog.showModal(); //mostrar
+		dialog.querySelector('.close').addEventListener('click', function() {
+		      dialog.close(); //habilitar cierre del dialogo
+		});
+		dialog.querySelector('.confirmar').addEventListener('click', function() {
+		      dialog.close(); //habilitar cierre del dialogo
+		});
+	}
+
+	function dialogoAceptarTodos(event){
+		event.preventDefault();
+		//uso de dialogo para confirmar la baja de un examen
+		var dialog = document.getElementById('dialogoAceptarTodos');
+		var titulo = dialog.querySelector('.mdl-dialog__title');
+		if (! dialog.showModal) {
+		   dialogPolyfill.registerDialog(dialog);
+		}
+		dialog.showModal(); //mostrar
+		dialog.querySelector('.close').addEventListener('click', function() {
+		      dialog.close(); //habilitar cierre del dialogo
+		});
+		dialog.querySelector('.confirmar').addEventListener('click', function() {
+		      dialog.close(); //habilitar cierre del dialogo
+		});
+	}
+
+	function detallesSolicitud(idSolicitud){
+		var url = "detallesSolicitud/" + idSolicitud + "/";
+		$.post(url, function(data){
+			$("#detallesSolicitud").slideUp("fast");
+			$("#detallesSolicitud").empty();
+			$("#detallesSolicitud").slideUp("fast", function(){
+				$("#detallesSolicitud").empty();
+				$("#detallesSolicitud").html(data);
+				componentHandler.upgradeAllRegistered();
+				$("#detallesSolicitud").slideDown();
+			});
+		});
+	}
+
+	function getCookie(name) {
+			var cookieValue = null;
+			if (document.cookie && document.cookie !== '') {
+				var cookies = document.cookie.split(';');
+				for (var i = 0; i < cookies.length; i++) {
+					var cookie = jQuery.trim(cookies[i]);
+					// Does this cookie string begin with the name we want?
+					if (cookie.substring(0, name.length + 1) === (name + '=')) {
+						cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+						break;
+					}
+				}
+			}
+			return cookieValue;
+		}
+
+	$(document).ready(function(){//si hago click en una de las opciones del select se activa el ajax
+			//Si no usaba este seteo tiraba el error 403 (FORBIDDEN)
+		$.ajaxSetup({ 
+		     beforeSend: function(xhr, settings) {
+		         function getCookie(name) {
+		             var cookieValue = null;
+		             if (document.cookie && document.cookie != '') {
+		                 var cookies = document.cookie.split(';');
+		                 for (var i = 0; i < cookies.length; i++) {
+		                     var cookie = jQuery.trim(cookies[i]);
+		                     // Does this cookie string begin with the name we want?
+		                     if (cookie.substring(0, name.length + 1) == (name + '=')) {
+		                         cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+		                         break;
+		                     }
+		                 }
+		             }
+		             return cookieValue;
+		         }
+		             xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+		     } 
+		});
+	});
+
+		
+
+</script>
+<style>
+#detallesRegistro{
+	display: none;
+}
+
+.solicitudes{
+    width: 40% !important;
+    display: inline-block;
+    vertical-align: top;
+}
+
+.demo-card-wide.mdl-card {
+  width: 800px;
+}
+
+#carrerasElegir{
+	width: inherit;
+}
+
+#boton{
+
+	height: 50px;
+}
+
+
+#elegirUniversidad{
+	width: auto;
+}
+
+.celdaTabla:hover{
+	cursor: pointer;
+}
+
+#aceptarTodos{
+	margin-right: 10%;
+}
+
+
+
+</style>
+<body>
+<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+		<header class="mdl-layout__header mdl-color-text--red-900">
+			<div class="mdl-layout__header-row   mdl-shadow--8dp">
+				<span class="mdl-layout-title" style="color: white;"> <link rel="icon" 
+				href="C:\Users\ALE\Downloads\blanco.png"/> AAEV 2.0 / Docente {{docente.nombre}} {{docente.apellido}}</span>
+				<div class="mdl-layout-spacer"></div>
+				<nav class="mdl-navigation">
+					<a id="botonInicio" style="color: white" class="mdl-navigation__link" 
+					href="{% url 'aaev:inicioDocente' %} "> Inicio </a>
+				<form method="POST" action="{% url 'aaev:cerrarSesion'%}" name="form"  id="form">
+				{% csrf_token %}
+					<a id="boton" style="color: white; height: 50px;" class="mdl-navigation__link" onclick="cerrarSesion()" href="#">Cerrar sesi&#243;n</a>
+				</form>
+				</nav>
+			</div>
+		</header>
+		<main class="mdl-layout__content" id="cuerpo">
+			<div class="page-content ">
+				<div style="margin-top: 6%;">
+				<div class="success">
+					<h4  style="display: none; text-align: center; color: green" id="mensajeExito"></h4>
+				</div>
+				<div id="contenedorSolicitudes" style="text-align: center;">
+					<div class="demo-card-wide mdl-card mdl-shadow--8dp solicitudes"  style="" id="solicitudes">
+							<div  class="mdl-card__title mdl-card--expand"> 
+								<h5 class="mdl-card__title-text"> Solicitudes </h5>
+							</div>
+							<div class="mdl-card__supporting-text" style="text-align: -webkit-center;">
+							{% if solicitudes %} 
+								<div>
+									<p> Solicitudes de alumnos para {{materia.nombre}}. </p>
+								</div>
+								<div id="espacioSolicitudes">
+										<table class="mdl-data-table mdl-js-data-table" id="tablaSolicitudes" style="width: auto; margin-bottom: 5%;">
+										<thead>
+											<tr>
+												<th class="mdl-data-table-cel--non-numeric"> DNI </th>
+												<th class="mdl-data-table-cel--non-numeric"> Nombre y apellido </th>
+											</tr>
+										</thead>
+										<tbody>
+										{% for solicitud in solicitudes %}
+										
+											<tr id="solicitud{{solicitud.idalumnohasmateria}}">
+												<td id="solicitudDNI{{solicitud.idalumnohasmateria}}" class="celdaTabla" style="text-align:center;" 
+													onclick="detallesSolicitud({{solicitud.idalumnohasmateria}})">
+												{{solicitud.idalumno.dni}}
+												</td>
+												<td id="solicitudNombre{{solicitud.idalumnohasmateria}}" class="celdaTabla" style="text-align:center;" onclick="detallesSolicitud({{solicitud.idalumnohasmateria}})">
+												{{solicitud.idalumno.nombre}} {{solicitud.idalumno.apellido}}
+												</td>
+											</tr>
+										{% endfor%}
+										</tbody>
+										</table>
+									</div> <!--tabla -->
+									<h4 id="mensajeSolicitudes" style="color: red; text-align: center;display: none;">No hay solicitudes de alumnos.</h4>
+								</div> <!--cuerpo tarjeta -->
+								<div class="mdl-card__actions mdl-card--border" style="text-align: center;">
+									<button name="rechazarTodos" id="rechazarTodos" value="Rechazar" class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-shadow--8dp" onclick="dialogoAceptarTodos(event)"> 
+									Aceptar todos
+									</button>
+									<button name="rechazarTodos" id="rechazarTodos" value="Rechazar" class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-shadow--8dp" onclick="dialogoRechazarTodos(event)"> 
+									Rechazar todos
+									</button>
+								</div><!--acciones tarjeta -->
+						
+						<!-- </div>  supporting text -->	
+					</div> <!--tarjeta -->
+						{% endif %}
+					</div> <!-- supporting text -->	
+				</div> <!--Contenedor solicitudes -->
+					<!-- detalles solicitudesAdmin -->
+					<div id="detallesSolicitud" style="text-align:center; margin-top: 5%;">
+						
+					</div><!-- detalles -->
+
+				</div> <!--contenido principal -->
+<!--dialogo de confirmacion para rechazo a todos (REGISTRO)-->
+<dialog class="mdl-dialog">
+  <h4 class="mdl-dialog__title" id="tituloDialogo">Rechazar a todos</h4>
+  <div class="mdl-dialog__content">
+    <p id="cuerpoDialogo">
+      ¿Seguro que quer&eacute;s rechazar a todos los alumnos?
+    </p>
+  </div>
+  <div class="mdl-dialog__actions">
+    <button type="button" class="mdl-button close" style="color: red;">Cancelar</button>
+    <button type="button" onclick="rechazarTodas(event)" class="mdl-button confirmar" style="color: green;" >Confirmar</button>
+  </div>
+</dialog>
+<!-- fin del dialogo para el rechazo a todos-->
+<!--dialogo de confirmacion para aceptar a todos-->
+<dialog class="mdl-dialog" id="dialogoAceptarTodos">
+  <h4 class="mdl-dialog__title" id="tituloDialogo">Aceptar a todos</h4>
+  <div class="mdl-dialog__content">
+    <p id="cuerpoDialogo">
+      ¿Seguro que quer&eacute;s aceptar a todos los alumnos?
+    </p>
+  </div>
+  <div class="mdl-dialog__actions">
+    <button type="button" class="mdl-button close" style="color: red;">Cancelar</button>
+    <button type="button" onclick="aceptarTodas(event)" class="mdl-button confirmar" style="color: green;" >Confirmar</button>
+  </div> 
+</dialog> <!-- Fin de dialogo para aceptar a todos -->
+</body>
+</html>

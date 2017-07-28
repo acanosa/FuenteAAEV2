@@ -1,0 +1,81 @@
+<html>
+<body>
+<script type="text/javascript">
+
+	function dialogoEliminar(event){
+		event.preventDefault();
+		//uso de dialogo para confirmar la baja de un examen
+		var dialog = document.querySelector('dialog');
+		var titulo = dialog.querySelector('.mdl-dialog__title');
+		if (! dialog.showModal) {
+		   dialogPolyfill.registerDialog(dialog);
+		}
+		dialog.showModal(); //mostrar
+		dialog.querySelector('.close').addEventListener('click', function() {
+		      dialog.close(); //habilitar cierre del dialogo
+		});
+		dialog.querySelector('.confirmar').addEventListener('click', function() {
+		      dialog.close(); //habilitar cierre del dialogo
+		});
+	}
+
+</script>
+<style>
+.detalles{
+	text-align: center !important;
+}
+</style>
+<div class="demo-card-wide mdl-card mdl-shadow--8dp solicitudes"  style="text-align: -webkit-center; margin-bottom: 3%;">
+	<div class="mdl-card__title mdl-card--expand">
+		<h5 class="mdl-card__title-text" id="tituloDetalles"> Datos registrados de {{alumno.nombre}} {{alumno.apellido}}</h5>
+	</div>
+	<div id="errorPlacement">
+
+	</div>
+	<div class="mdl-card__supporting-text">
+		<br>
+		<table class="mdl-data-table detalles"  align="center" style="width: 50%; text-align: center;" border="1">
+			<tr>
+				<td class="mdl-data-table-cel--non-numeric detalles" style=" width: auto;">Nombre: {{alumno.nombre}}
+				</td>
+			</tr>
+			<tr>	
+				<td class="mdl-data-table-cel--non-numeric detalles" style=" width: 80%;">Apellido: {{alumno.apellido}}
+				</td>
+			</tr>
+			<tr>
+				<td class="mdl-data-table-cel--non-numeric detalles" style="width: 80%;">
+				DNI: {{alumno.dni}}
+				</td>
+			</tr>
+			<tr>
+				<td class="mdl-data-table-cel--non-numeric detalles" style=" width: 80%;">
+				Email: {{alumno.mail}}
+				</td>
+			</tr>
+		</table>
+	</div> <!-- cuerpo tarjeta -->
+	<div class="mdl-card__actions">
+		<button name="rechazar" id="rechazar" class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-shadow--8dp" onclick="dialogoEliminar(event)">
+			Eliminar
+		</button>
+	</div><!--acciones tarjeta -->
+</div>	<!-- tarjeta -->
+
+<!--dialogo de confirmacion para rechazo -->
+<dialog class="mdl-dialog">
+  <h4 class="mdl-dialog__title" id="tituloDialogo">Eliminar {{alumno.nombre}} {{alumno.apellido}}</h4>
+  <div class="mdl-dialog__content">
+    <p id="cuerpoDialogo">
+      ¿Seguro que quer&eacute;s eliminar este alumno de esta materia?
+    </p>
+  </div>
+  <div class="mdl-dialog__actions">
+    <button type="button" class="mdl-button close" style="color: red;">Cancelar</button>
+    <button type="button" onclick="eliminarAlumno(event,{{alumno.idalumno}},{{materia.idmateria}})" class="mdl-button confirmar" style="color: green;" >Confirmar</button>
+  </div>
+</dialog>
+<!-- fin del dialogo para eliminar docente -->
+
+</body>
+</html>

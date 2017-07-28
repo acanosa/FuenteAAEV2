@@ -1,0 +1,648 @@
+<html>
+<head>
+	<title>Preguntas de {{materia.nombre}}</title>
+	{% load staticfiles %}
+	<script src=" {% static 'aaev/jquery.js' %}"></script>
+	<script src="{% static 'aaev/material.min.js' %}"></script>
+	<script src="{% static 'aaev/select/dist/mdl-selectfield.min.js' %}"></script>
+	<script src="{% static 'aaev/javascript/cerrarSesion.js' %}"></script>
+	<script src="{% static 'aaev/javascript/DjangoAjaxSetup.js' %}"></script>
+	<script src=" {% static 'aaev/jquery.validate.min.js' %}"></script>
+	<script src=" {% static 'aaev/validaciones/agregarPreguntaValidar.js' %}"></script>
+	<link rel="stylesheet" href="{% static 'aaev/select/dist/mdl-selectfield.min.css' %}"></link>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"></link>
+	<link rel="stylesheet" href="{% static 'aaev/material.css' %}"></link>
+	<link rel="stylesheet" href=" {% static 'aaev/estiloIconos.css' %}"></link>
+	<link rel="stylesheet" href=" {% static 'aaev/mensajes.css' %}"></link>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<style>
+.demo-card-wide.mdl-card {
+  width: 800px;
+}
+
+.demo-card-wide > .mdl-card__title {
+
+  align-items: center;
+  justify-content: center;
+}
+
+.demo-card-wide > .mdl-card__supporting-text {
+
+  align-items: center;
+  justify-content: center;
+
+}
+#boton{
+
+	height: 50px;
+}
+/*
+button {
+     background:none!important;
+     border:none; 
+     padding:0!important;
+     font: inherit;
+     /*border is optional
+     border-bottom:1px solid #444; 
+     cursor: pointer;
+}
+*/
+.success{
+	text-align: center;
+	color: green;
+	font-size: 16px;
+}
+
+.info{
+	color: red;
+}
+
+.celdaTabla:hover{
+	cursor: pointer;
+	background-color: #7BAFD4;
+	color: #FFFFFF;
+	display: block;
+}
+
+td{
+    white-space: initial;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    -ms-word-break: break-all;
+    height: auto;
+    width: auto;
+    padding: auto;
+    content: attr(data-text);
+    -ms-hyphens: auto;
+	-moz-hyphens: auto;
+	-webkit-hyphens: auto;
+	hyphens: auto;
+}
+
+.texto{
+	white-space: initial;
+}
+
+#mensajeEliminar{
+	color: green;
+	font-size: 16px;
+}
+</style>
+<script type="text/javascript">
+
+
+	$(document).ready(function(){
+		console.log("asdada");
+		$('body').on('click','#cancelarEdicion' , function(){
+			$("#detalles").slideUp();
+			$("#detalles").empty(); //elimino el formulario generado
+			
+		});
+
+		$('body').on('click','#aceptarEdicion' , function(){
+			componentHandler.upgradeAllRegistered();
+			var idUnidad = $("#menuUnidadesEditar option:selected").val();
+			var texto = $("#textoEditar").val();
+			var idTipo = $("#idTipoEditar").val();
+			var idPregunta = $("#idPreguntaEditar").val();
+			var url= "editarPregunta/" + idPregunta + "/";
+			var data = {}
+			if (idTipo == 1){
+				var opcion = $('input[name=opcionesEditar]:checked', '#formEditar').val()
+				data = {textoEditar: texto, opcion: opcion, idUnidadEditar: idUnidad, idTipoEditar: idTipo}
+				
+				/*
+				*/
+				
+			} else if (idTipo == 2){
+				var incorrectasInput = 
+					document.getElementsByName("respuestasIncorrectasEditar[]");
+
+				var correctasInput =
+					document.getElementsByName("respuestasCorrectasEditar[]");
+				
+				//agarro la lista de respuestas
+				var idCorrectas = []
+				var idIncorrectas = []
+				var correctas = []
+				var incorrectas = []
+				//a su vez agarro los ID de las respuestas
+				for(i=0;i<correctasInput.length;i++){
+					var idString = correctasInput[i].id;
+					idString = idString.replace("EditarCorrecta", "");
+					id = parseInt(idString); //convierto a int
+					idCorrectas.push(id); //agrego a array
+					correctas.push(correctasInput[i].value);
+				}
+				//aca agarro los ID de los elementos y extraigo el id que carga Django
+				//eliminando parte de la cadena
+				for(i=0;i<incorrectasInput.length;i++){
+					var idString = incorrectasInput[i].id;
+					idString = idString.replace("EditarIncorrecta", "");
+					id = parseInt(idString);
+					idIncorrectas.push(id);
+					incorrectas.push(incorrectasInput[i].value);
+				}
+				//leer comentario anterior
+				data = {idTipoEditar: idTipo, textoEditar: texto, idUnidadEditar:idUnidad, 'correctas[]': correctas, 'incorrectas[]': incorrectas, 'idCorrectas[]': idCorrectas, 'idIncorrectas[]': idIncorrectas}
+			//fin de if para multiple chioice
+			} else if (idTipo == 3){ 
+				var incorrectasInput = 
+					document.getElementsByName("imagenesIncorrectasEditar");
+
+				var correctasInput =
+					document.getElementsByName("imagenesCorrectasEditar");
+				
+				//agarro la lista de respuestas
+				var idCorrectas = []
+				var idIncorrectas = []
+				var correctas = []
+				var incorrectas = []
+				//a su vez agarro los ID de las respuestas
+				for(i=0;i<correctasInput.length;i++){
+					var idString = correctasInput[i].id;
+					idString = idString.replace("imagenCorrecta", "");
+					id = parseInt(idString); //convierto a int
+					idCorrectas.push(id); //agrego a array
+					correctas.push(correctasInput[i].value);
+				}
+				//aca agarro los ID de los elementos y extraigo el id que carga Django
+				//eliminando parte de la cadena
+				for(i=0;i<incorrectasInput.length;i++){
+					var idString = incorrectasInput[i].id;
+					idString = idString.replace("imagenIncorrecta", "");
+					id = parseInt(idString);
+					idIncorrectas.push(id);
+					incorrectas.push(incorrectasInput[i].value);
+				}
+				//leer comentario anterior
+				$("#idUnidadEditar").val(idUnidad);
+				$("#idTipoEditar").val(idTipo);
+				$("#idCorrectas").val(idCorrectas);
+				$("#idIncorrectas").val(idIncorrectas);
+				$("#formEditar").submit();
+				//data = new FormData($('#formEditar')[0]);
+				/*
+				data = {idTipoEditar: idTipo, textoEditar: texto, idUnidadEditar:idUnidad, 'correctas[]': correctas, 'incorrectas[]': incorrectas, 'idCorrectas[]': idCorrectas, 'idIncorrectas[]': idIncorrectas}
+				$("#idUnidadEditar").val(idUnidad);
+				//lista = document.getElementsByName('imagenesIncorrectasEditar');
+				//console.log(lista);
+				$("#formEditar").submit();
+
+				var inputCorrectas
+				
+				console.log(incorrectas);
+				*/
+				//fin de if para union de conceptos
+			} else if (idTipo == 4){
+				var conceptos = document.getElementsByName('conceptosEditar[]');
+				var definiciones = document.getElementsByName('definicionesEditar[]');
+				var valoresConceptos = [];
+				var valoresDefiniciones = [];
+				var idConceptos= []
+				var idDefiniciones = []
+				for (i=0; i<conceptos.length ; i++){
+					valoresConceptos.push(conceptos[i].value);
+					var StringId = conceptos[i].id;
+					var numero = parseInt(StringId.replace("concepto", "")); 
+					idConceptos.push(numero);
+				}
+
+				for (i=0;i<definiciones.length; i++){
+					valoresDefiniciones.push(definiciones[i].value);
+					var StringId = definiciones[i].id;
+					var numero = parseInt(StringId.replace("definicion",""));
+					idDefiniciones.push(numero);
+				}
+
+
+				data = {idTipoEditar: idTipo, idUnidadEditar: idUnidad, textoEditar: texto, 'conceptos[]': valoresConceptos, 'definiciones[]': valoresDefiniciones, "idConceptos[]": idConceptos, "idDefiniciones[]": idDefiniciones}
+			}
+			/*
+			if (data != null){ //evito un request sin datos
+				
+			} 
+			if(idTipo != 3){
+			}
+
+			*/
+			if (idTipo != 3){
+					$.post(url, data)
+					//function(data){})
+					.done(function(data){ //para aplicar tambien en componentes dinamicamente generados:
+						console.log(data)
+						$("#detalles").slideUp();
+						$("#detalles").empty(); //elimino el formulario generado
+						$("#mensajeEliminar").html(data.mensaje);
+						$("#n" + data.idPregunta).empty(); //vacio el nombre de la universidad en la tabla
+						$("#n" + data.idPregunta + "pregunta").html(data.texto);		 //le pongo el nombre nuevo
+						location.reload();
+						/*
+						*/
+					})
+					.fail(function(ts) {
+							alert(ts.responseText);
+					       //alert("ERROR: " + error + "\n" + "STATUS: " + status + "\n" + "XHR: " + xhr);
+
+					});
+			}
+		});
+
+
+		$("#selectTipo").on('change',function(event){
+				var elegido= $("#selectTipo :selected").val();
+				console.log(elegido);
+
+				if(elegido != 0){
+					$("#formulario").empty();
+					var idTipo= $("#selectTipo :selected").val();
+					$("#idTipoAgregar").val(idTipo);
+					if (idTipo != 1)
+					{
+						$("#formularioVF").hide();
+						var url = idTipo + "/" ;
+						$.post(url, function(data){
+							$("#formulario").html(data);
+							componentHandler.upgradeAllRegistered();
+							
+						})
+						/*
+						.done(function(data){
+						})
+						*/
+						.fail(function(data){
+							alert("ERROR");
+							console.log(data);
+						});
+					}else if (idTipo == 1){
+						$("#formularioVF").show();
+
+					}
+				}
+			});
+		$("#selectUnidad").on('change',function(){
+			var elegido= $("#selectUnidad :selected").val();
+			if(elegido != 0){
+				$("#idUnidadAgregar").val(elegido);
+				console.log("idUnidad" + elegido);
+			}
+		});
+	});
+
+	function dialogo(event, idPregunta){
+		event.preventDefault();
+		//uso de dialogo para confirmar la baja de un examen
+		var dialog = document.querySelector('dialog');
+		var titulo = dialog.querySelector('.mdl-dialog__title');
+		if (! dialog.showModal) {
+		   dialogPolyfill.registerDialog(dialog);
+		}
+		/*
+		var nombre = document.getElementById("n" + idPregunta + "texto").innerText //agarro td
+	titulo.innerHTML = titulo.innerHTML + nombre;
+		*/
+		document.getElementById("idPreguntaBaja").value = idPregunta;
+		dialog.showModal(); //mostrar
+		dialog.querySelector('.cancelar').addEventListener('click', function() {
+		      dialog.close(); //habilitar cierre del dialogo
+		      titulo.innerHTML = "Eliminar "; //vuelve a vaciarse el espacio reservado para el nombre
+		      //$("#idPreguntaBaja").empty();
+		});
+		dialog.querySelector('.confirmar').addEventListener('click', function() {
+		      dialog.close(); //habilitar cierre del dialogo
+		      titulo.innerHTML = "Eliminar "; //vuelve a vaciarse el espacio reservado para el nombre
+		      //$("#idPreguntaBaja").empty();
+		});
+	}
+
+	function eliminarPregunta(event){
+		event.preventDefault();
+		var idPregunta = document.getElementById("idPreguntaBaja").value;
+		$.fn.eliminar(event,idPregunta); //aca llamo a la funcion de arriba
+	}
+
+	$.fn.eliminar = function(event, idPregunta){ //funcion de Jquery en una especie de variable
+			event.preventDefault();
+			url = idPregunta + "/eliminarPregunta/";
+			$.post(url, function(data){
+				
+			})
+			.done(function(data){
+				$("#detalles").slideUp();
+				$("#detalles").empty(); //elimino el formulario de edicion generado (por si es el de la pregunta)
+				$("#" + idPregunta).hide();
+				$("#mensajeEliminar").show();
+				$("#mensajeEliminar").html(data);
+				window.scrollTo(0, 0);
+				$("#" + idPregunta).remove();
+				$("#idPreguntaBaja").empty();
+			})
+			.fail(function(response) {
+  				alert(response.responseText);
+			});
+	}
+
+	function editarPregunta(event, idPregunta){
+		//genero un "formulario" de edicion por medio de javascript
+		event.preventDefault();
+		
+		url = "detalles/" + idPregunta + "/";
+		$.post(url,function(data){
+
+		})
+		.done(function(data){
+			$("#detalles").empty();
+			$("#detalles").html(data);
+			componentHandler.upgradeAllRegistered();
+			$("#detalles").slideDown();
+		});
+
+	}
+	//evito que entren un monton de espacios o vengan vacias las respuestas
+	function funcionValidarTextos(lista1,lista2){
+		var error = false;
+		for(i=0;i<lista1.length;i++){
+			var texto = lista1[i].value; //evito que entren un monton de espacios
+			if(texto == null){
+				error= true;
+				$("#errorAgregar").show();
+				break;		
+			}
+			texto = texto.replace(/^\s+/, '').replace(/\s+$/, '');
+				if (texto == ''){
+					error = true;
+					$("#errorAgregar").show();		
+					break;
+				}
+		}
+		for(i=0;i<lista2.length;i++){
+			var texto = lista2[i].value; //evito que entren un monton de espacios
+			if(texto == null){
+				error= true;
+				$("#errorAgregar").show();
+				break;		
+			}
+			texto = texto.replace(/^\s+/, '').replace(/\s+$/, '');
+			if (texto == ''){
+				error = true;
+				$("#errorAgregar").show();		
+				break;
+			}
+		}
+		return error;
+	}
+
+	function funcionAgregarPregunta(event){
+		event.preventDefault();
+		var idTipo = $("#selectTipo").val();
+		var idUnidad = $("#selectUnidad").val();
+		//console.log(idTipo);
+		//agregarPregunta = $("agregarPregunta");
+		var pregunta = $("#texto").val();
+		if (idTipo == 1)
+			$("#agregarPregunta").submit();
+		if (idTipo == 2){//multiple choice
+			var listaCorrectas = []; 
+			var listaIncorrectas = [];
+			listaCorrectas = document.getElementsByName("respuestasCorrectas[]");
+			listaIncorrectas = document.getElementsByName("respuestasIncorrectas[]");
+			//hay error con textos ingresados
+			if(funcionValidarTextos(listaCorrectas,listaIncorrectas) == false){
+				$("#errorAgregar").hide();
+				$("#agregarPregunta").submit();				
+			}else{
+				$("#errorAgregar").show();
+			}
+		}else if(idTipo == 3){//multiple choice imagenes
+			var listaCorrectas = []; 
+			var listaIncorrectas = [];
+			listaCorrectas = document.getElementsByName("imagenesCorrectas");
+			listaIncorrectas = document.getElementsByName("imagenesIncorrectas");
+			if(funcionValidarTextos(listaCorrectas,listaIncorrectas) == false){
+				$("#errorAgregar").hide();
+				$("#agregarPregunta").submit();				
+			}else{
+				$("#errorAgregar").show();
+			}
+
+		}else if(idTipo == 4){ //union de conceptos
+			var listaConceptos = []; 
+			var listaDefiniciones = [];
+			var error = false;
+			listaConceptos = document.getElementsByName("conceptos[]");
+			listaDefiniciones = document.getElementsByName("definiciones[]");
+			if((listaConceptos.length >= 2 && listaDefiniciones.length >= 2 ) && (listaConceptos.length == listaDefiniciones.length) && (funcionValidarTextos(listaConceptos,listaDefiniciones) == false)){
+				$("#errorAgregar").hide();
+				$("#agregarPregunta").submit();						
+			}else
+				$("#errorAgregar").show();
+		}
+		/*
+		if ($('#agregarPregunta').valid()){
+   		// will also trigger unobtrusive validation only for this element if in place 
+   			// add your extra logic here to execute only when element is valid
+			//console.log("validado");
+		}
+		if( idTipo != 0 &&  idTipo != null && idUnidad != 0 && idUnidad != null){
+			if(idUnidad != 0 && idUnidad != null){
+				$("#errorUnidad").hide();
+				if(idTipo != 0 &&  idTipo != null){
+					$("#errorTipo").hide();
+					agregarPregunta.submit();
+				}else
+					$("#errorTipo").show();
+			}else{
+				$("#errorUnidad").show();
+			}
+		}else{
+			$("#errorTipo").show();
+			$("#errorUnidad").show();
+		} */
+		
+	}
+	/*
+	function agregarPregunta(event){
+		event.preventDefault();
+		form = document.getElementById("agregarPregunta");
+		idTipo = $("#selectTipo :selected").val();
+		if(idTipo == 1){
+			form.submit();
+		}else if (idTipo == 2){
+
+		}
+	} 
+	*/
+</script>
+<body>
+
+
+<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+		<header class="mdl-layout__header">
+			<div class="mdl-layout__header-row  mdl-shadow--8dp">
+				<span class="mdl-layout-title" style="color: white;"> AAEV 2.0 / Docente {{docente.nombre}} {{docente.apellido}}</span>
+				<div class="mdl-layout-spacer"></div>
+				<nav class="mdl-navigation">
+					<a id="botonInicio" style="color: white" class="mdl-navigation__link" 
+					href="{% url 'aaev:inicioDocente' %} "> Inicio </a>
+				<form method="POST" action="{% url 'aaev:cerrarSesion'%}" name="form"  id="form">
+				{% csrf_token %}
+					<a id="boton" style="color: white; height: 50px;" class="mdl-navigation__link" onclick="cerrarSesion()" href="#">Cerrar sesi&#243;n</a>
+				</form>
+				</nav>
+			</div>
+		</header>
+		<main class="mdl-layout__content" style="text-align: -webkit-center;" id="cuerpo">
+			<div class="page-content " style="margin-top: 6%">
+			<div id="mensajeEliminar">
+
+			</div>
+			<div class="demo-card-wide mdl-card mdl-shadow--8dp">
+				<div class="mdl-card__title mdl-card--expand">
+					<h5 class="mdl-card__title-text">{{materia.nombre}}: Lista de Preguntas</h5>
+				</div>
+				<div class="mdl-card__supporting-text" id="cuerpoTarjetaPreguntas">
+					
+					<div id="vacio">
+					{% if messages %}
+						{% for message in messages %}
+							<h4 class="{{message.tags}}"> {{message}} </h4>
+						{% endfor %}
+					{% endif %}
+					</div>
+					{%if preguntas %}
+						<table class="mdl-data-table mdl-js-data-table" id="tablaPreguntas">
+							<thead><!-- tabla encabezado-->
+								<tr><!-- FILA-->
+									<th style="text-align: -webkit-center;">Tipo</th>
+									<th style="text-align: -webkit-center;">Unidad</th>
+									<th style="text-align: -webkit-center;">Pregunta</th>
+									<th style="text-align: -webkit-center;">Respuestas</th>
+									<th colspan="2" style="text-align: -webkit-center;">Acciones</th>
+								</tr>
+							</thead>
+							<tbody><!-- tabla Cuerpo-->			
+								{% for pregunta in preguntas %}
+								<tr style="text-align: center"; return false;" id="{{pregunta.idpregunta}}">
+									<td class="mdl-data-table-cel--non-numeric" id="n{{pregunta.idpregunta}}tipo" style="text-align: -webkit-center;"> {{pregunta.idtipopregunta}}</td>
+									<td class="mdl-data-table-cel--non-numeric" id="n{{pregunta.idpregunta}}unidad" style="text-align: -webkit-center;">{{pregunta.idunidad}}</td>
+									<td class="mdl-data-table-cel--non-numeric texto" id="n{{pregunta.idpregunta}}pregunta" style="text-align: -webkit-center;">{{pregunta.texto}} </td>
+									<td class="mdl-data-table-cel--non-numeric" id="n{{pregunta.idpregunta}}respuestas" style="text-align: -webkit-center;">{{ pregunta| contarRespuestas}} </td>
+									
+									<div class="mdl-layout-spacer"></div>
+									<td class="mdl-data-table-cel--non-numeric" style="text-align: -webkit-center;"> <button class="mdl-button mdl-js-button" onclick="editarPregunta(event,{{pregunta.idpregunta}}, '{{pregunta.nombre}}' )"> <i class="material-icons md-36 md-green">mode_edit</i> </button> </td> 
+									<td class="mdl-data-table-cel--non-numeric" style="text-align: -webkit-center;"> <button class="mdl-button mdl-js-button" onclick="dialogo(event,{{pregunta.idpregunta}})"> <i class="material-icons md-36 md-red">highlight_off</i> </button> 
+									 </td>
+								</tr>
+								{% endfor %}
+							{% else %}
+								<h4> No hay preguntas en esta materia </h4>
+							{% endif %}
+						</tbody>
+					</table>
+					<br>
+					<!-- div de detalles para edicion de preguntas -->
+					<div id="detalles">
+					</div>
+				</div> <!--supporting text -->
+			</div> <!-- tarjeta lista de preguntas -->
+			<div class="demo-card-wide mdl-card mdl-shadow--8dp" style="margin-top: 5%; margin-bottom: 5%;">
+				<div class="mdl-card__title mdl-card--expand">
+					<h5 class="mdl-card__title-text">Agregar pregunta</h5>
+				</div>
+				<div class="mdl-card__supporting-text" style="text-align: -webkit-center;">
+					<form enctype="multipart/form-data" name="agregarPreguntaForm" id="agregarPregunta" action ="agregarPregunta/"method="POST">
+						{% csrf_token %}
+						<div class="mdl-selectfield mdl-js-selectfield mdl-selectfield--floating-label " style="align: -webkit-center;">
+						  <select id="selectTipo" name="selectTipo" class="mdl-selectfield__select">
+						  	<option value="0" selected="selected"> Elegir...</option>  
+						    {% for tipo in tipos %}
+						    	<option value="{{tipo.idtipopregunta}}"> {{tipo.nombretipo}} </option>
+						    {% endfor %}
+						  </select>
+						  <label class="mdl-selectfield__label" for="selectTipo">Tipo</label>
+						</div>
+						<br>
+						<div class="mdl-selectfield mdl-js-selectfield mdl-selectfield--floating-label " style="align: -webkit-center;">
+						  <select id="selectUnidad" name="selectUnidad" class="mdl-selectfield__select">
+						  	<option value="0" selected="selected"> Elegir...</option>  
+						    {% for unidad in unidades %}
+						    	<option value="{{unidad.idunidad}}"> {{unidad.nombre}} </option>
+						    {% endfor %}
+						  </select>
+						  <label class="mdl-selectfield__label" for="selectTipo">Unidad</label>
+						</div>
+						
+						<br>
+						<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label " style="align: -webkit-center;">
+							<input type="text" class="mdl-textfield__input" id="texto" name="texto" autocomplete="off"/>
+							<label for="texto" class="mdl-textfield__label">Texto de la pregunta</label>
+							
+						</div>
+
+						<br> 
+						<div id="formularioVF" style="display: none;">
+							<div>
+								<p> Elegi la respuesta correcta </p>
+								<label class="mdl-radio mdl-js-radio mdl-js-ripple-effect"
+										for="verdadero">
+									<input class="mdl-radio__button" id="verdadero" 
+											type="radio" name="opciones" value="1" checked />
+									<label class="mdl-radio__label" for="privilegioAlumno">Verdadero</label>
+								</label>
+								<br>
+								<label class="mdl-radio mdl-js-radio mdl-js-ripple-effect"
+										for="falso">
+									<input class="mdl-radio__button" id="falso" 
+											type="radio" name="opciones" value="2" />
+									<label class="mdl-radio__label" for="privilegioDocente">Falso</label>
+								</label>
+							</div>
+						</div>
+						<br>
+						<div id="formulario">
+
+						</div>
+						<div id="errorAgregar" style="display: none;">
+							<h4 style="color: red; font-size: 16px;">Faltan agregar respuestas </h4>
+						</div>
+						<br>
+						<input type="hidden" name="idTipoAgregar" id="idTipoAgregar" value=""></input>
+						<input type="hidden" name="idUnidadAgregar" id="idUnidadAgregar" value=""></input>
+							<button style="align: -webkit-center;" class="mdl-button mdl-js-button" id="agregar" onclick="funcionAgregarPregunta(event);" name="agregar">
+							Agregar pregunta
+							</button>
+					</form>
+					<div id="mensaje" class="success">
+						<h4 > </h4>
+					</div>
+				</div> <!--supporting text -->
+			</div> 
+
+	</main>
+</div>
+
+	<input type="hidden" name="idmateria" id="idmateria" value="{{materia.idmateria}}"></input>
+	<input type="hidden" name="preguntaEditarId" id="idUnidadEditarId" value=""></input>
+	<input type="hidden" name="preguntaEditarNombre" id="idUnidadEditarNombre" value=""></input>
+
+<dialog class="mdl-dialog">
+  <h4 class="mdl-dialog__title" id="tituloDialogo">Eliminar </h4>
+  <div class="mdl-dialog__content">
+    <p id="cuerpoDialogo">
+      ¿Seguro que quer&eacute;s eliminar esta pregunta? Se borraran tambien las opciones que contenga. Esto tambi&eacute;n puede afectar a ex&aacute;menes.
+    </p>
+    <input type="hidden" id="idPreguntaBaja" name="idPreguntaBaja" value=""/>
+  </div>
+  <div class="mdl-dialog__actions">
+    <button type="button" onclick="eliminarPregunta(event)" class="mdl-button confirmar" style="color: green;" >Confirmar</button>
+    <button type="button" class="mdl-button cancelar" style="color: red;" >Cancelar</button>
+  </div>
+</dialog>
+
+
+</body>
+
+
+
+</html>

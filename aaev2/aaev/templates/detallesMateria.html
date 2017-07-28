@@ -1,0 +1,41 @@
+<html>
+
+<style>
+h4{
+	font-size: 14px;
+}
+
+button{
+	width: 30%;
+}
+</style>
+
+<body>
+
+<div style="display: inline-block;">
+	<h4><strong>Nombre: </strong>{{materia.nombre}}</h4>
+	<h4><strong>Año de carrera: </strong>{{materia.aniocarrera}}</h4>
+	<h4><strong>Cantidad de examenes: </strong>{{materia|contarExamenes}}</h4>
+</div>
+<div style="text-align: -webkit-center;">
+ 	<table id="tablaDocentes" class="mdl-data-table mdl-js-data-table" style="margin-bottom: 5%;">
+ 	{% for docente in docentes%}
+ 		<tr>
+ 			<th class="mdl-data-table--cel-non-numeric" style="font-size: 15px; text-align: center;">Docentes</th>
+ 		</tr>
+		<tr>
+			<td class="mdl-data-table--cel-non-numeric">{{docente.nombre}} {{docente.apellido}}</td>
+		</tr>
+	</table>
+	{% endfor %}
+</div>
+
+<div>
+	<button id="enviarSolicitud" class="mdl-button mdl-js-button mdl-shadow--8dp" onclick="enviarSolicitud(event,{{materia.idmateria}})">
+	Enviar solicitud
+	</button>
+	<button style="margin-left: 7%;" id="cancelarSolicitud"  class="mdl-button mdl-js-button mdl-shadow--8dp" onclick="cancelarSolicitud(event)">Cancelar
+	</button> 
+</div>
+</body>
+</html>

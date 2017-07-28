@@ -1,0 +1,154 @@
+<html>
+<script type="text/javascript">
+
+	$(document).ready(function(){
+		var contador = document.getElementsByName('tr').size();
+
+		$("#AgregarOtra").click(function(event){
+			event.preventDefault();
+			contador++;
+			var tabla = $("#tablaRespuestas");
+
+			var tr = $("<tr></tr>");
+			var td1 = $("<td></td>").text('F');
+			var td2 = $("<td></td>");
+			tr.append(td1);
+			tr.append(td2);
+			var div= $("<div></div>");
+			
+			var input = $("<input type='text' id='opcion"+ contador +"'></input>");
+			var label = $("<label for='opcion"+ contador +"'></label").text("Texto de la respuesta");
+			div.append(input);
+			div.append(label);
+			div.addClass("mdl-textfield mdl-js-textfield mdl-textfield--floating-label");
+			input.addClass("mdl-textfield__input");
+			label.addClass("mdl-textfield__label");
+			td1.addClass("mdl-data-table-cel--non-numeric");
+			td2.addClass("mdl-data-table-cel--non-numeric");
+			td2.append(div);
+
+			tabla.append(tr);
+			componentHandler.upgradeAllRegistered();
+
+		})
+
+	});
+	function agregarALista(source){
+		var i = 0;
+		var listaCorrectas = document.getElementsByName("correctas[]");
+		var listaIncorrectas = document.getELementsByName("incorrectas[]");
+		console.log("Antes correctas: " + listaCorrectas.length);
+		console.log("Antes incorrectas: " + listaIncorrectas.length);
+		if (source.checked){
+			for(i=0;i<listaIncorrectas.length;i++){
+				if (source.id == listaIncorrectas[i].value){
+					listaIncorrectas[i].remove();
+					var input = $("<input type='hidden' name='correctas[]' value='" + source.value + "'");
+					$("#correctas").append(input);
+				}
+			}
+			console.log("Despues correctas:" + listaCorrectas.length);
+			console.log("Despues incorrectas: " + listaIncorrectas.length);
+		}else{
+			for(i=0;i<listaCorrectas.length;i++){
+				if (source.id == listaCorrectas[i].value){
+					listaCorrectas[i].remove();
+					var input = $("<input type='hidden' name='incorrectas[]' value='" + source.value + "'");
+					$("#incorrectas").append(input);
+				}
+			}
+			console.log("Despues correctas:" + listaCorrectas.length);
+			console.log("Despues incorrectas: " + listaIncorrectas.length);
+		}
+	}
+	/*
+	*/
+	function agregarOtroConcepto(event){
+		event.preventDefault();
+		var lista = document.getElementsByName("conceptos[]");
+		console.log(lista);
+		contador = lista.length + 1;
+		console.log(contador);
+		var tabla = $("#tablaConceptos");
+		var tr = $("<tr></tr>");
+		
+		var td1 = $("<td></td>");
+		var td2 = $("<td></td>");
+		tr.append(td1);
+		tr.append(td2)
+		var div= $("<div></div>");
+		
+		var input = $("<input type='text' name='conceptos[]' id='concepto"+ contador +"'></input>");
+		var label = $("<label for='concepto"+ contador +"'></label").text("Texto del concepto");
+
+		var divDef= $("<div></div>");
+		
+		var inputDef = $("<input type='text' name='definiciones[]' id='definicion"+ contador +"'></input>");
+		var labelDef = $("<label for='definicion"+ contador +"'></label").text("Texto de la definición");
+		div.append(input);
+		div.append(label);
+		divDef.append(inputDef);
+		divDef.append(labelDef);
+		div.addClass("mdl-textfield mdl-js-textfield mdl-textfield--floating-label");
+		divDef.addClass("mdl-textfield mdl-js-textfield mdl-textfield--floating-label");
+		input.addClass("mdl-textfield__input");
+		label.addClass("mdl-textfield__label");
+		inputDef.addClass("mdl-textfield__input");
+		labelDef.addClass("mdl-textfield__label");
+		td1.addClass("mdl-data-table-cel--non-numeric");
+		td2.addClass("mdl-data-table-cel--non-numeric")
+		td1.append(div);
+		td2.append(divDef);
+		tabla.append(tr);
+		componentHandler.upgradeAllRegistered();
+	}
+
+</script>
+<body>
+	<div id="formUnionConceptos" style="text-align: -webkit-center;">
+		<table class="mdl-data-table mdl-js-data-table" id="tablaConceptos">
+			<tr>
+			<th style="text-align: -webkit-center;">CONCEPTO</th>
+			<th style="text-align: -webkit-center;">DEFINICI&Oacute;N</th>
+			</tr>
+			<tr>
+				<td class="mdl-data-table-cel--non-numeric">
+					<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label " style="align: -webkit-center;">
+						<input type="text" class="mdl-textfield__input" id="concepto1" name="conceptos[]" autocomplete="off"/>
+						<label for="concepto1" class="mdl-textfield__label">Texto del concepto </label>
+					</div>
+				</td>
+				<td>
+					<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label " style="align: -webkit-center;">
+						<input type="text" class="mdl-textfield__input" id="definicion1" name="definiciones[]" autocomplete="off"/>
+						<label for="definicion1" class="mdl-textfield__label">Texto de la definici&oacute;n </label>
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<td class="mdl-data-table-cel--non-numeric">
+					<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label " style="align: -webkit-center;">
+						<input type="text" class="mdl-textfield__input" id="concepto2" name="conceptos[]" autocomplete="off"/>
+						<label for="concepto2" class="mdl-textfield__label">Texto del concepto </label>
+					</div>
+				</td>
+				<td>
+					<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label " style="align: -webkit-center;">
+						<input type="text" class="mdl-textfield__input" id="definicion2" name="definiciones[]" autocomplete="off"/>
+						<label for="definicion2" class="mdl-textfield__label">Texto de la definici&oacute;n </label>
+					</div>
+				</td>
+			</tr>
+		</table>
+		<div style="align: -webkit-center; margin-bottom: 2%;margin-top: 2%;">
+			<button class="mdl-button mdl-js-button" onclick="agregarOtroConcepto(event);" id="AgregarOtra" >Agregar otro concepto</button>
+		</div>
+
+		
+	</div>
+
+</body>
+
+
+
+</html>

@@ -1,0 +1,435 @@
+<html>
+<head>
+<title>Alumno: {{alumno.nombre}} {{alumno.apellido}}</title>
+
+	{% load staticfiles %}
+	<script src=" {% static 'aaev/jquery.js' %}"></script>
+	<script src="{% static 'aaev/material.min.js' %}"></script>
+	<script src="{% static 'aaev/select/dist/mdl-selectfield.min.js' %}"></script>
+	<script src="{% static 'aaev/javascript/cerrarSesion.js' %}"></script>
+	<script src="{% static 'aaev/javascript/DjangoAjaxSetup.js' %}"></script>
+	<link rel="stylesheet" href="{% static 'aaev/select/dist/mdl-selectfield.min.css' %}"></link>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"></link>
+	<link rel="stylesheet" href="{% static 'aaev/material.css' %}"></link>
+	<link rel="stylesheet" href=" {% static 'aaev/estiloIconos.css' %}"></link>
+	<link rel="stylesheet" href=" {% static 'aaev/mensajes.css' %}"></link>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<script type="text/javascript">
+
+
+</script>
+<style>
+th {
+    padding: 0 18px 12px 18px;
+    text-align: center !important ; 
+    font-size: 16px !important;
+}
+
+td{
+    white-space: initial;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    -ms-word-break: break-all;
+    height: auto;
+    width: auto;
+    padding: auto;
+    content: attr(data-text);
+    -ms-hyphens: auto;
+	-moz-hyphens: auto;
+	-webkit-hyphens: auto;
+	hyphens: auto;
+	text-align: center !important;
+}
+</style>
+<script type="text/javascript">
+    function formatearTiempo(seconds) {
+    	//la funcion formatea los segundos para poder mostrarlos al alumno
+	    var h = Math.floor(seconds / 3600), 
+	        m = Math.floor(seconds / 60) % 60,
+	        s = seconds % 60;
+	    if (h < 10) h = "0" + h;
+	    if (m < 10) m = "0" + m; //si valen menos de 10 pongo un 0 adelante
+	    if (s < 10) s = "0" + s;
+	    return h + ":" + m + ":" + s; //devuelve en formato hh:mm:ss 
+	}
+
+	function empezarTimer(duracion, display) {
+		array = duracion.split(":")
+		//saco el total de segs del tiempo para ir restando
+		contar = parseInt(array[0]) * 60 * 60 + parseInt(array[1]) * 60 + parseInt(array[2]);
+		
+		function timer() {
+		    contar--;
+		    if (contar < 0){
+		    	clearInterval(contar);	
+		    	//como no hay evento le pongo null
+		    	return enviarDatos(null);
+		    } 
+		 	   
+		    document.getElementById("tiempoRestante").innerHTML = formatearTiempo(contar);
+		}
+
+    	//var timer = duracion;//,horas, minutes, seconds;
+	    array = duracion.split(':')
+	    setInterval(timer, 1000);
+	}
+
+	jQuery(function ($) {
+	    var tiempoLimite = $("#tiempoLimite").val();
+	        display = $('#tiempoRestante');
+	    empezarTimer(tiempoLimite, display);
+	});
+
+	//agarro todo lo que el alumno marco en el examen y lo envio 
+	function enviarDatos(event){
+		if (event != null)
+			event.preventDefault();
+		console.log("Iniciando toma de datos");
+		console.log("Iniciando toma de datos de CHECKBOX");
+		$("input:checkbox:checked").each(function(){
+		    agregarAListas($(this));
+		});
+
+		console.log("Iniciando toma de datos de RADIO");
+		$("input:radio:checked").each(function(){
+			agregarAListas($(this));
+		});
+
+		console.log("Iniciando toma de datos de SELECT");
+		$("select option:selected").each(function(){
+			if ($(this).val() != 0)
+				agregarAListas($(this));
+		});
+
+		console.log("Toma de datos finalizada.");
+		var listaRespuestas = document.getElementsByName("idRespuesta[]");
+		var listaPreguntas = document.getElementsByName("idPregunta[]");
+		console.log(listaRespuestas.length);
+		console.log(listaPreguntas.length);
+		$("#terminarExamen").submit();
+	}
+
+	function agregarAListas(input){
+		idElemento = input.attr('id');
+		idRespuesta = idElemento.replace("respuesta","");
+		var idPregunta = $("#pregunta" + idRespuesta).val();
+
+		listaRespuestas = document.getElementsByName('idRespuesta[]'); 
+		var divEnvioRtas = document.getElementById("espacioRespuestasEnviar");
+		var divEnvioPtas = document.getElementById("espacioPreguntasEnviar");
+		
+		var elementoNuevo = document.createElement("input");
+		elementoNuevo.type="hidden";
+		elementoNuevo.name= "idRespuesta[]";
+		elementoNuevo.value = "" + idRespuesta ;
+		elementoNuevo.id="respuestasEnviar" + idRespuesta;
+		
+		divEnvioRtas.appendChild(elementoNuevo);
+
+
+		elementoNuevo = document.createElement("input");
+		elementoNuevo.type="hidden";
+		elementoNuevo.name= "idPregunta[]";
+		elementoNuevo.value = "" + idPregunta ;
+		elementoNuevo.id="preguntasEnviar" + idPregunta;
+
+		divEnvioPtas.appendChild(elementoNuevo);
+	}
+
+	$(document).ready(function(){
+		
+
+
+
+
+		//Al hacer click en un checkbox
+		$("checkbox").click(function(){
+			var estado = $(this).checked;
+			if(estado){
+				var listaDatos = document.getElementsByName("respuestas[]");
+				var listaIdPregunta = document.getElementsByName("idPreguntas[]");
+				var valor = $(this).value;
+				var nombre = $(this).nombre;
+				nombre.replace("respuesta", "");
+				var id = parseInt(nombre);
+				
+				console.log(valor);
+				listaDatos.push(valor);
+
+				console.log(id);
+				listaIdPregunta.push(id);
+
+			}else{
+				console.log("descheckeado");
+			}
+		});
+
+		//cuando elijo una opcion de X select, lo saco de los demas que esten enla misma pregunta para que no se elija la opcion 2 veces 
+		/*
+		$("select").change(function(){
+		    var valor = $(this).val();
+		    var nombre = $(this).name;
+		    var selects = document.getElementsByName(nombre);
+		    for (i=0;i<selects.length;i++){
+		    	if (selects[i] != $(this)){
+		    		opciones = selects[i].options;
+		    		for(j=0;j<opciones.length;j++){
+		    			if(opciones[j].value == $(this).val()){
+
+		    			}
+		    		}
+		    	}
+		    }
+		});
+		*/
+	})
+</script>
+<body>
+
+	<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+		<header class="mdl-layout__header">
+			<div class="mdl-layout__header-row  mdl-shadow--8dp">
+				<span class="mdl-layout-title" style="color: white;"> AAEV 2.0 / Alumno {{alumno.nombre}} {{alumno.apellido}}</span>
+				<div class="mdl-layout-spacer"></div>
+				<nav class="mdl-navigation">
+					<a id="botonInicio" style="color: white" class="mdl-navigation__link" 
+					href="{% url 'aaev:inicioAlumno' %} "> Inicio </a>
+				<form method="POST" action="{% url 'aaev:cerrarSesion'%}" name="form"  id="form">
+				{% csrf_token %}
+					<a id="boton" style="color: white; height: 50px;" class="mdl-navigation__link" onclick="cerrarSesion()" href="#">Cerrar sesi&#243;n</a>
+				</form>
+				</nav>
+			</div>
+		</header>
+		<main class="mdl-layout__content" style="text-align: -webkit-center;" id="cuerpo">
+			<div class="page-content " style="margin-top: 6%">
+				<h4 id="tiempoRestante"></h4>
+				<input type="hidden" id="tiempoLimite" value="{{examen.tiempoLimite}}"/>
+				{% for pregunta in preguntas%}
+					{% if pregunta.idtipopregunta_id == 1 %}
+						<div class="demo-card-wide mdl-card mdl-shadow--8dp"  style="display: inline-block; text-align: -webkit-center; width: 45%; ">
+							<div class="mdl-card__title mdl-card--expand">
+								<h5 class="mdl-card__title-text"> Pregunta {{forloop.counter}}</h5>
+							</div>
+						<div class="mdl-card__supporting-text">
+							<!-- valores necesarios para obtener valor de la pregunta -->
+							<input type="hidden" name="unidadTipo[]" id="unidadTipo{{forloop.counter}}" value="{{pregunta.idunidad_id}};{{pregunta.idtipopregunta_id}}"/>
+
+							<br>
+							<h4> <strong> {{pregunta.texto}} </strong> </h4>
+							<br>
+
+							<div>
+								{% for respuesta in pregunta|getRespuestas%}
+								<input type="hidden" id="pregunta{{respuesta.idRespuesta}}" value="{{pregunta.idpregunta}}"/>
+								{% if respuesta.texto == "Verdadero" %}
+									<label class="mdl-radio mdl-js-radio mdl-js-ripple-effect"
+									for="respuesta{{respuesta.idRespuesta}}">
+										<input class="mdl-radio__button" id="respuesta{{respuesta.idRespuesta}}" type="radio" name="respuestaDe{{respuesta.idpregunta_id}}" value="1"/>
+										<label class="mdl-radio__label" for="respuesta{{respuesta.idRespuesta}}">Verdadero</label>
+									</label>
+								{% else %}
+									<br>
+									<label class="mdl-radio mdl-js-radio mdl-js-ripple-effect"
+									for="respuesta{{respuesta.idRespuesta}}">
+										<input class="mdl-radio__button" type="radio" id="respuesta{{respuesta.idRespuesta}}" name="respuestaDe{{respuesta.idpregunta_id}}"  value="0" />
+										<label class="mdl-radio__label" for="respuesta{{forloop.counter}}">Falso</label>
+									</label>
+								{% endif %}
+								{% endfor %}
+								<!--
+									<label class="mdl-radio mdl-js-radio mdl-js-ripple-effect"
+								for="respuestaV{{forloop.counter}}">
+									<input class="mdl-radio__button" id="respuestaV{{forloop.counter}}" type="radio" name="respuesta{{forloop.counter}}" value="1"/>
+									<label class="mdl-radio__label" for="respuesta{{respuesta.idRespuesta}}">Verdadero</label>
+								</label>
+								<br>
+								<label class="mdl-radio mdl-js-radio mdl-js-ripple-effect"
+								for="respuestaF{{forloop.counter}}">
+									<input class="mdl-radio__button" type="radio" id="respuestaF{{forloop.counter}}" name="respuesta{{forloop.counter}}"  value="0" />
+									<label class="mdl-radio__label" for="respuesta{{forloop.counter}}">Falso</label>
+								</label>
+								-->
+							</div> <!-- radio -->
+						</div><!--supporting text -->
+					</div><!-- tarjeta -->
+					<br>
+					<div style="margin-bottom: 5%;">
+
+					</div>
+					{% elif pregunta.idtipopregunta_id == 2 %}
+						<div class="demo-card-wide mdl-card mdl-shadow--8dp mdl-cell">
+							<div class="mdl-card__title mdl-card--expand">
+								<h5 class="mdl-card__title-text"> Pregunta {{forloop.counter}}</h5>
+							</div>
+							<div class="mdl-card__supporting-text">
+								<br>
+								<h4> <strong> {{pregunta.texto}} </strong> </h4>
+								<br>
+								<table border="0">
+									<tr>
+										<th colspan="2"></th>
+									</tr>
+								{% for respuesta in pregunta|getRespuestas %}
+									<input type="hidden" id="pregunta{{respuesta.idRespuesta}}" value="{{pregunta.idpregunta}}"/>
+									<tr>
+										<td>
+											<label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="respuesta{{respuesta.idRespuesta}}" >
+												<input type="checkbox" id="respuesta{{respuesta.idRespuesta}}" name="checkbox{{forloop.counter}}" class="mdl-checkbox__input"/>
+										</td>
+										<td>
+											<span class="mdl-checkbox__label">{{respuesta.texto}}</span>
+										</td>
+											</label>
+									</tr>
+										<!--
+											<td>
+											<label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="checkbox{{forloop.counter}}" >
+												<input type="checkbox" id="checkbox{{forloop.counter}}" name="respuesta{{respuesta.idRespuesta}}" class="mdl-checkbox__input"/>
+										</td>
+										<td>
+											<span class="mdl-checkbox__label">{{respuesta.texto}}</span>
+										</td>
+											</label>
+
+
+										-->
+								{% endfor %}
+								</table>
+							</div><!--supporting text -->
+						</div><!-- tarjeta -->
+					<br>
+					<div style="margin-bottom: 5%;">
+
+					</div>
+					{% elif pregunta.idtipopregunta_id == 3 %}
+						<div class="demo-card-wide mdl-card mdl-shadow--8dp "  style="width: 50%;">
+							<div class="mdl-card__title mdl-card--expand">
+								<h5 class="mdl-card__title-text"> Pregunta {{forloop.counter}}</h5>
+							</div>
+							<div class="mdl-card__supporting-text">
+								<br>
+								<h4> <strong> {{pregunta.texto}} </strong> </h4>
+								<br>
+								<table border="0">
+									<tr>
+										<th colspan="2"></th>
+									</tr>
+								{% for respuesta in pregunta|getRespuestas %}
+									<input type="hidden" id="pregunta{{respuesta.idRespuesta}}" value="{{pregunta.idpregunta}}"/>
+									<tr>
+										<td>
+											<label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="respuesta{{respuesta.idRespuesta}}" >
+												<input type="checkbox" id="respuesta{{respuesta.idRespuesta}}" name="checkboxImg{{forloop.counter}}" class="mdl-checkbox__input" >
+										</td>
+										<input type="hidden" id="respuesta{{respuesta.idRespuesta}}" value="{{pregunta.idpregunta}}"/>
+										<td>
+											<span class="mdl-checkbox__label"><img alt="Embedded Image" src="data:image/png;base64,{{ respuesta.imagen }}" style="text-align:center; height: 300px; width: 300px;"/>
+											{% if respuesta.descripcion %}
+												<p>{{respuesta.descripcion}}</p>
+											{% endif %}
+											</span>
+										</td>
+										</label>
+									</tr>	
+								{% endfor %}
+								
+								</table>
+							</div><!--supporting text -->
+						</div><!-- tarjeta -->
+					<br>
+					<div style="margin-bottom: 5%;">
+
+					</div>
+					{% elif pregunta.idtipopregunta_id == 4 %}
+						<div class="demo-card-wide mdl-card mdl-shadow--8dp mdl-cell">
+							<div class="mdl-card__title mdl-card--expand">
+								<h5 class="mdl-card__title-text"> Pregunta {{forloop.counter}}</h5>
+							</div>
+							<div class="mdl-card__supporting-text" >
+								<br>
+								<h4> <strong> {{pregunta.texto}} </strong> </h4>
+								<br>
+								<div >
+									<table style="text-align:center !important;" class="mdl-js-data-table mdl-data-table">
+										<tr>
+											<th class="mdl-data-table-cel--non-numeric">Conceptos</th>
+										</tr>
+										{% for respuesta in pregunta|getConceptos%}
+											<tr>	
+												<td style="width: 20%" class="mdl-data-table-cel--non-numeric">
+													{{forloop.counter}}: {{respuesta.texto}}
+												</td>
+											</tr>
+										{% endfor %}
+									</table>
+								</div>
+								
+								<table style="margin-top: 7%; text-align: center;" class="mdl-js-data-table mdl-data-table">
+									<tr>
+										<th class="mdl-data-table-cel--non-numeric">Definiciones</th>
+									</tr>
+									{% for respuesta in pregunta|getDefiniciones %}
+										<tr>
+											<td style="width: 20%" class="mdl-data-table-cel--non-numeric">
+												{{respuesta.texto}}
+											</td>
+										</tr>
+									{% endfor %}
+								</table>
+								<div style="margin-top: 10%; text-align: center;">
+								{% for respuesta in pregunta|getConceptos %}
+									<h4>Para {{forloop.counter}}</h4>
+									<div class="mdl-selectfield mdl-js-selectfield mdl-selectfield--floating-label">
+										<select id="menuOpciones{{respuesta.idRespuesta}}" name="menuOpciones{{respuesta.idRespuesta}}" class="mdl-selectfield__select">
+										  	<option value="0" selected="selected"> Elegir...</option>  
+										    {% for definicion in pregunta|getDefiniciones %}
+										    	<option id="respuesta{{definicion.idRespuesta}}" value="{{definicion.idRespuesta}}"> {{definicion.texto}} </option>
+										    {% endfor %}
+										</select>
+										<label class="mdl-selectfield__label" for="menuOpciones{{respuesta.idRespuesta}}">Seleccione definici&oacute;n</label>
+									</div>
+									<input type="hidden" id="pregunta{{respuesta.idRespuesta}}" value="{{pregunta.idpregunta}}"/>
+								{% endfor %}
+								</div>
+							</div><!--supporting text -->
+						</div><!-- tarjeta -->
+						<br>
+						<div style="margin-bottom: 5%;">
+
+						</div>
+					{% endif %}
+				{% endfor %}
+				<div class="demo-card-wide mdl-card mdl-shadow--8dp"  style="">
+							<div class="mdl-card__title mdl-card--expand">
+								<h5 class="mdl-card__title-text"> Finalizar examen </h5>
+							</div>
+							<div class="mdl-card__supporting-text">
+								<br>
+								<h4> <strong> Hac&eacute; click en el bot&oacute;n "Finalizar" para evaluar tus respuestas </strong> </h4>
+								<br>
+							</div><!--supporting text -->
+							<div class="mdl-card__actions">
+								<form action="corregirExamen/{{examen.idexamen}}/" method="POST" name="terminarExamen" id="terminarExamen">
+								{% csrf_token %}
+									<button class="mdl-button mdl-js-button" onclick="enviarDatos(event);">Finalizar</button>
+									
+									<div id="espacioRespuestasEnviar">
+										
+									</div>
+									<div id="espacioPreguntasEnviar">
+										
+									</div>
+
+								</form>
+							</div>
+						</div><!-- tarjeta -->
+
+			</div> <!-- contenido principal -->
+		</main>
+	</div>
+	
+</body>
+</form>
+</html>

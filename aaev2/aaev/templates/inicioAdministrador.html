@@ -1,0 +1,432 @@
+<html>
+<head>
+
+<title> Admin: {{admin.nombre}} {{admin.apellido}}</title>
+{% load staticfiles %}
+
+
+<script src=" {% static 'aaev/jquery.js' %}"></script>
+<script src="{% static 'aaev/material.min.js' %}"></script>
+<script src="{% static 'aaev/select/dist/mdl-selectfield.min.js' %}"></script>
+<script src=" {% static 'aaev/jquery.validate.min.js' %}"></script>
+<script src=" {% static 'aaev/jquery-validate-additional-methods.js' %}"></script>
+<link rel="stylesheet" href="{% static 'aaev/select/dist/mdl-selectfield.min.css' %}">
+<link rel="stylesheet" href="{% static 'aaev/material.css' %}"></link>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<style>
+
+.centrado{
+	text-align: center !important;
+}
+
+.demo-card-wide.mdl-card {
+  width: 800px;
+}
+
+.demo-card-wide > .mdl-card__title {
+
+  align-items: center;
+  justify-content: center;
+}
+
+.demo-card-wide > .mdl-card__supporting-text {
+
+  align-items: center;
+  justify-content: center;
+
+}
+#boton{
+
+	height: 50px;
+}
+
+button {
+     background:none!important;
+     border:none; 
+     padding:0!important;
+     font: inherit;
+     /*border is optional*/
+     border-bottom:1px solid #444; 
+     cursor: pointer;
+}
+
+.success{
+	text-align: -webkit-center;
+	color: green;
+
+}
+
+.info{
+	color: red;
+}
+.docentesPendientes, .sinDocentesPendientes{
+	background-color: #0ea8c9;
+	/* color: white; */
+}
+.docentesPendientes:hover{
+	cursor: pointer;
+}
+
+.universidades:hover{
+	cursor: pointer;
+}
+
+.celdaLink:hover{
+	cursor: pointer;
+}
+
+.sinDocentesPendientes{
+	background-color: #25d45d;
+}
+
+.celdaMateria:hover{
+	cursor: pointer;
+}
+
+#errorPlacement{
+	color: red;
+	font-size: 16px;
+}
+
+.unla{
+	background-color: #8F0129;
+	color: #FFFFFF !important; 
+	border: 1px solid black;
+}
+
+.unlaSub, .unlaSub:hover{
+	background-color: #8d8a8a !important;
+	color: #FFFFFF !important; 
+}
+
+
+
+
+
+</style>
+<script language="JavaScript" type="text/javascript">
+
+	function verExamenes(event, idMateria){
+		event.preventDefault();
+		document.getElementById(idMateria + "examenes").submit();
+	}
+
+	function detallesMateria(idMateria){
+		var url = "detallesMateria/" + idMateria + "/";
+		$.post(url, function(data){
+			$("#detallesMateria").slideUp("fast", function(){
+				var tabla = 
+				$("#detallesMateria").empty();
+				$("#detallesMateria").html(data);
+				componentHandler.upgradeAllRegistered();
+				$("#detallesMateria").slideDown();
+				
+			});
+		});
+	}
+
+	function enviarSolicitud(event, idMateria){
+		event.preventDefault();
+		var nombreMateria = $("#materia" + idMateria).text();
+		var url = "enviarSolicitud/" + idMateria + "/";
+			
+		$.post(url, function(data){
+			var tabla = document.getElementById("tablaMateriasSolicitadas");
+			if( tabla != null){
+				var tr = document.createElement('tr'); //creo un <tr> </tr>
+				tr.id= "materiaSolicitadaRow" + idMateria;
+				var td = document.createElement('td'); // creo un <td> </td>
+				td.className = "mdl-data-table-cel--non-numeric"; // le doy mis clases de CSS
+				td.innerHTML = nombreMateria; //le pongo el nombre de la unidad recien creada
+				td.id = "materiaSolicitada" + idMateria;
+				td.style="text-align: -webkit-center;";
+				tabla.appendChild(tr); // agrego este <tr> a la tabla abajo del todo
+				tr.appendChild(td);
+			}else{
+				$("#avisoSolicitadas").hide();
+				var tablaSolicitadas = document.createElement('table');
+				tablaSolicitadas.id="tablaMateriasSolicitadas";
+				tablaSolicitadas.className = "mdl-data-table mdl-js-data-table";
+				tablaSolicitadas.style="margin-bottom: 5%; text-align: center"
+				var trHeader = document.createElement('tr'); //creo un <tr> </tr>
+				var tdHeader = document.createElement('th');
+				tdHeader.innerHTML = "Materias solicitadas";
+				var tr = document.createElement('tr'); //creo un <tr> </tr>
+				tr.id= "materiaSolicitadaRow" + idMateria;
+				var td = document.createElement('td'); // creo un <td> </td>
+				td.className = "mdl-data-table-cel--non-numeric"; // le doy mis clases de CSS
+				td.innerHTML = nombreMateria; //le pongo el nombre de la unidad recien creada
+				td.id = "materiaSolicitada" + idMateria;
+				td.style="text-align: -webkit-center;";
+				document.getElementById("espacioMateriasSolicitadas").appendChild(tablaSolicitadas);
+				tablaSolicitadas.appendChild(trHeader);
+				trHeader.appendChild(tdHeader);
+				tablaSolicitadas.appendChild(tr); // agrego este <tr> a la tabla abajo del todo
+				tr.appendChild(td);
+			}
+			$("#detallesMateria").slideUp();
+			$("#detallesMateria").empty();
+			$("#mensajeExito").hide();
+			$("#materia" + idMateria).hide();
+			$("#mensajeExito").html(data);
+		});
+		
+	}
+
+	
+
+	function cancelarSolicitud(event){
+		event.preventDefault();
+		$("#detallesMateria").slideUp(function(){
+			$("#detallesMateria").empty();
+		});
+	}
+
+
+	function getCookie(name){
+			var cookieValue = null;
+			if (document.cookie && document.cookie !== '') {
+				var cookies = document.cookie.split(';');
+				for (var i = 0; i < cookies.length; i++) {
+					var cookie = jQuery.trim(cookies[i]);
+					// Does this cookie string begin with the name we want?
+					if (cookie.substring(0, name.length + 1) === (name + '=')) {
+						cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+						break;
+					}
+				}
+			}
+			return cookieValue;
+		}
+
+
+	$(document).ready(function(){
+		//Si no usaba este seteo tiraba el error 403 (FORBIDDEN)
+		$.ajaxSetup({ 
+		     beforeSend: function(xhr, settings) {
+		         function getCookie(name) {
+		             var cookieValue = null;
+		             if (document.cookie && document.cookie != '') {
+		                 var cookies = document.cookie.split(';');
+		                 for (var i = 0; i < cookies.length; i++) {
+		                     var cookie = jQuery.trim(cookies[i]);
+		                     // Does this cookie string begin with the name we want?
+		                     if (cookie.substring(0, name.length + 1) == (name + '=')) {
+		                         cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+		                         break;
+		                     }
+		                 }
+		             }
+		             return cookieValue;
+		         }
+		             xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+		     } 
+		});
+
+		$("#tdUniversidades").click(function(){
+			$("#verUniversidades").submit();
+		});
+
+		$("#tdCarreras").click(function(){
+			$("#verCarreras").submit();
+		});
+
+		$("#tdMaterias").click(function(){
+			$("#verMaterias").submit();
+		});
+		$("#tdDocentes").click(function(){
+			$("#gestionDocentes").submit();
+		});
+
+
+		$("#submitSolicitud").on('click', function(event){
+			//$("#enviarSolicitudMateria").validate();
+			event.preventDefault();
+			var idmateria = $("#idmateria").val();
+			console.log("click");
+			//var url =iduniversidad  + "/" + idcarrera + "/" + idmateria + "/"; 
+			if ((idmateria==0 || idmateria == null) && (!$.trim($('textarea#mensaje').val())) ){
+				var html = "<h4> Por favor elegi una materia o escribi un mensaje. </h4>";
+				$("#errorPlacement").html(html);
+				$("#errorPlacement").show();
+				
+				console.log("IDMateria: " + $("#idmateria").val());
+				console.log("Mensaje: " + $('textarea#mensaje').val());
+			}else{
+				$("#enviarSolicitudMateria").submit();
+			}
+			
+		});
+
+		//si hago click en una de las opciones del select se activa el ajax
+		$("#menuUniversidad").on('change',function(){
+			var elegido= $("#menuUniversidad :selected").val();
+			if(elegido != 0){
+				$("#carrerasElegir").empty();
+				$("#materiasElegir").empty();
+				var iduniversidad= $("#menuUniversidad :selected").val();
+				
+				var datos = {'iduniversidad': iduniversidad };
+				$.ajax({
+					method: "POST",
+					url: iduniversidad + '/',  //metodo que trae la lista de carreras
+					data: {iduniversidad: iduniversidad}, //iduniversidad
+					datatype: 'html',
+					success: function(resp){
+						$("#carrerasElegir").html(resp); //imprimo el html armado, pero por alguna razon reimporta este html adentro
+						$("#carrerasElegir").slideDown();
+						componentHandler.upgradeAllRegistered();
+					},
+					error: function(xhr, status, error) {
+					  var err = eval("(" + xhr.responseText + ")");
+					  alert(err);
+					  console.log("Error");
+					}
+				});
+
+			}
+		});
+		//var tablaMaterias = $("#tablaMaterias").DataTable();
+		$('#materiaUnidad').click(function(){
+				var materiaUnidad = $("#materiaUnidad").val();
+				console.log(materiaUnidad);
+		});
+
+		$(document).on("change", '.menuMateria', function(event) { 
+				event.preventDefault();
+			    var id = $("#menuMateria :selected").val();
+				console.log(id);
+				if(id != 0){
+					$("#idmateria").val(id); //agrego el valor al form
+				}
+		});
+			
+
+	});
+	
+
+
+
+	
+	
+</script>
+<body>
+	<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+		<header class="mdl-layout__header">
+			<div class="mdl-layout__header-row  mdl-shadow--8dp">
+				<span class="mdl-layout-title" style="color: white;"> AAEV 2.0 / Administrador {{admin.nombre}} {{admin.apellido}}</span>
+				<div class="mdl-layout-spacer"></div>
+				<nav class="mdl-navigation">
+				<form method="POST" action="{% url 'aaev:logoutAdmin'%}" name="form"  id="form">
+				{% csrf_token %}
+					<a id="boton" style="color: white;" class="mdl-navigation__link" onclick="document.getElementById('form').submit();" href="#">Cerrar sesi&#243;n</a>
+				</form>
+				</nav>
+			</div>
+		</header>
+		<main class="mdl-layout__content" id="cuerpo">
+			<div class="page-content ">
+				<div style="margin-top: 6%;">
+				<div class="success" style="display: none;">
+					<h4 id="mensajeExito"></h4>
+				</div>
+					{% if messages %}
+						{% for message in messages %}
+						<div>
+							<h4 class="{{ message.tags }}"> {{message}} </h4>
+						</div>
+						{% endfor %}
+					{% endif %}
+				<div>
+					<div class="demo-card-wide mdl-card mdl-shadow--8dp mdl-cell"  style=" margin-right: 5%; display: block; float:left; text-align: -webkit-center; width: 45%;">
+						<div class="mdl-card__title mdl-card--expand">
+							<h5 class="mdl-card__title-text"> Gesti&oacute;n</h5>
+						</div>
+						
+						<div id="errorPlacement">
+
+						</div>
+					
+						<div class="mdl-card__supporting-text">
+						<br>
+						<p> Agregar, modificar o eliminar una universidad,carrera o materia </p>
+						<table class="mdl-data-table" style="width: 80%;" border="1">	
+							<tr class="universidades"> <!--tabla de universidad-->
+								<form method="POST" action="{% url 'aaev:adminUniversidades' %}" id="verUniversidades" name="verUniversidades">
+								{% csrf_token %}
+									<td style="text-align: center;width: 80%;" 
+									class="mdl-data-table-cel--non-numeric" id="tdUniversidades">
+									Gesti&oacute;n de universidades
+									</td>
+								</form>
+							</tr>
+							<tr class="carreras">
+								<form method="POST" action="{% url 'aaev:adminCarreras' %}" id="verCarreras" name="verCarreras">
+								{% csrf_token %}
+									<td style="text-align: center;width: 80%;" onclick="" class="mdl-data-table-cel--non-numeric celdaLink" id="tdCarreras" >
+										Gesti&oacute;n de carreras
+									</td>
+								</form>
+							</tr>
+							<tr class="materias">
+								<form method="POST" action="{% url 'aaev:adminMaterias' %}" id="verMaterias" name="verMaterias">
+								{% csrf_token %}
+									<td style="text-align: center;width: 80%;" onclick="" class="mdl-data-table-cel--non-numeric celdaLink" id="tdMaterias">
+										Gesti&oacute;n de materias
+									</td>
+								</form>
+							</tr>
+							<tr>
+							<form method="POST" action="{% url 'aaev:gestionDocentes' %}" id="gestionDocentes" name="gestionDocentes">
+								{% csrf_token %}
+									<td style="text-align: center;width: 80%;" onclick="" class="mdl-data-table-cel--non-numeric celdaLink" id="tdDocentes">
+										Gesti&oacute;n de docentes
+									</td>
+								</form>
+							</tr>
+						</table>
+						</div>
+					</div>
+					<div class="demo-card-wide mdl-card mdl-shadow--8dp mdl-cell"  style="text-align: -webkit-center; width: 45%; float: right; display:block">
+						<div class="mdl-card__title mdl-card--expand">
+							<h5 class="mdl-card__title-text"> Docentes </h5>
+						</div>
+						
+						<div id="errorPlacement">
+
+						</div>
+					
+						<div class="mdl-card__supporting-text">
+						<br>
+						<p> Aca podes ver las solicitudes de docentes. </p>
+						<table class="mdl-data-table" style="width: 80%;" border="1">	
+						{% if not docentesSolicitantes|vacio%}
+							<tr class="docentesPendientes celdaTabla"> <!--tabla de universidad-->
+								<form method="POST" action="{% url 'aaev:solicitudesAdmin'%}" name="verSolicitudes" id="verSolicitudes">
+									{% csrf_token %}
+									<td style="text-align: center;width: 80%;" onclick='document.getElementById("verSolicitudes").submit();'' class="mdl-data-table-cel--non-numeric" id="tdSolicitudes" >
+									<strong> Lista de docentes: pendientes </strong>
+									</td>
+								</form>
+							</tr>
+						{% else %}
+							<tr class="sinDocentesPendientes celdaTabla"> <!--tabla de universidad-->
+								<td style="text-align: center;width: 80%;" class="mdl-data-table-cel--non-numeric">
+									<strong> Lista de docentes: Sin pendientes.</strong>
+								</td>
+							</tr>
+						{% endif %}					
+						</table>
+						</div>
+					</div><!-- tarjeta -->
+				</div>
+				</div>
+				
+			</div>
+		</main>
+	</div>
+
+</body>
+</html>

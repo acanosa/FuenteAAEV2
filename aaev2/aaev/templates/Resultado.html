@@ -1,0 +1,61 @@
+<html>
+<head>
+<title> Resultado </title>
+{% load staticfiles %}
+	<script src=" {% static 'aaev/jquery.js' %}"></script>
+	<script src="{% static 'aaev/material.min.js' %}"></script>
+	<script src="{% static 'aaev/select/dist/mdl-selectfield.min.js' %}"></script>
+	<script src="{% static 'aaev/javascript/cerrarSesion.js' %}"></script>
+	<script src="{% static 'aaev/javascript/DjangoAjaxSetup.js' %}"></script>
+	<link rel="stylesheet" href="{% static 'aaev/select/dist/mdl-selectfield.min.css' %}"></link>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"></link>
+	<link rel="stylesheet" href="{% static 'aaev/material.css' %}"></link>
+	<link rel="stylesheet" href=" {% static 'aaev/estiloIconos.css' %}"></link>
+	<link rel="stylesheet" href=" {% static 'aaev/mensajes.css' %}"></link>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<style>
+.aprobado{
+	color: green;
+	font-size: 16px;
+}
+
+.desaprobado{
+	color: red;
+	font-size: 16px;
+}
+</style>
+<body>
+<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+		<header class="mdl-layout__header">
+			<div class="mdl-layout__header-row  mdl-shadow--8dp">
+				<span class="mdl-layout-title" style="color: white;"> AAEV 2.0 / Alumno {{alumno.nombre}} {{alumno.apellido}}</span>
+				<div class="mdl-layout-spacer"></div>
+				<nav class="mdl-navigation">
+					<a id="botonInicio" style="color: white" class="mdl-navigation__link" 
+					href="{% url 'aaev:inicioAlumno' %} "> Inicio </a>
+				<form method="POST" action="{% url 'aaev:cerrarSesion'%}" name="form"  id="form">
+				{% csrf_token %}
+					<a id="boton" style="color: white; height: 50px;" class="mdl-navigation__link" onclick="cerrarSesion()" href="#">Cerrar sesi&#243;n</a>
+				</form>
+				</nav>
+			</div>
+		</header>
+		<main class="mdl-layout__content" style="text-align: -webkit-center;" id="cuerpo">
+			<div class="page-content " style="margin-top: 6%">
+				<div class="demo-card-wide mdl-card mdl-shadow--8dp"  style="display: inline-block; text-align: -webkit-center; width: 45%; ">
+					<div class="mdl-card__title mdl-card--expand">
+						<h5 class="mdl-card__title-text"> Resultado </h5>
+					</div>
+					<div class="mdl-card__supporting-text">
+						<br>
+						<h4 class = "{{estilo}}"> <strong> {{mensaje}} </strong> </h4>
+						<br>
+						<h4> Nota: <strong> {{nota}} </strong> </h4>
+					</div><!--supporting text -->
+				</div><!-- tarjeta -->
+			</div>
+		</main>
+	</div>
+</body>
+</html>

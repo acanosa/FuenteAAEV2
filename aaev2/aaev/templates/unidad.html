@@ -1,0 +1,192 @@
+<html>
+<head>
+	<title>Unidades de {{materia.nombre}}</title>
+	{% load staticfiles %}
+	<script src=" {% static 'aaev/jquery.js' %}"></script>
+	<script src="{% static 'aaev/material.min.js' %}"></script>
+	<script src="{% static 'aaev/select/dist/mdl-selectfield.min.js' %}"></script>
+	<script src="{% static 'aaev/javascript/unidadABM.js' %}"></script>
+	<script src="{% static 'aaev/javascript/cerrarSesion.js' %}"></script>
+	<script src=" {% static 'aaev/jquery.validate.min.js' %}"></script>
+	<link rel="stylesheet" href="{% static 'aaev/select/dist/mdl-selectfield.min.css' %}"></link>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"></link>
+	<link rel="stylesheet" href="{% static 'aaev/material.css' %}"></link>
+	<link rel="stylesheet" href=" {% static 'aaev/estiloIconos.css' %}"></link>
+	<link rel="stylesheet" href=" {% static 'aaev/mensajes.css' %}"></link>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<style>
+
+.success{
+	color: green;
+	font-size: 16px;
+	text-align: center;
+	width: auto;
+}
+
+.demo-card-wide.mdl-card {
+  width: 800px;
+}
+
+.demo-card-wide > .mdl-card__title {
+
+  align-items: center;
+  justify-content: center;
+
+}
+
+
+
+.row{
+	text-align: -webkit-center;
+}
+
+.demo-card-wide > .mdl-card__supporting-text {
+
+  align-items: center;
+  justify-content: center;
+
+}
+
+
+</style>
+<script type="text/javascript">
+function dialogo(event, idUnidad){
+		event.preventDefault();
+		//uso de dialogo para confirmar la baja de un examen
+		var dialog = document.querySelector('dialog');
+		var titulo = dialog.querySelector('.mdl-dialog__title');
+		if (! dialog.showModal) {
+		   dialogPolyfill.registerDialog(dialog);
+		}
+		document.getElementById("idUnidadBaja").value = idUnidad;
+		dialog.showModal(); //mostrar
+		dialog.querySelector('.cancelar').addEventListener('click', function() {
+		      dialog.close(); //habilitar cierre del dialogo
+		      titulo.innerHTML = "Eliminar "; //vuelve a vaciarse el espacio reservado para el nombre
+		});
+		dialog.querySelector('.confirmar').addEventListener('click', function() {
+		      dialog.close(); //habilitar cierre del dialogo
+		      titulo.innerHTML = "Eliminar "; //vuelve a vaciarse el espacio reservado para el nombre
+		});
+	}
+
+</script>
+<body>
+
+<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+		<header class="mdl-layout__header">
+			<div class="mdl-layout__header-row  mdl-shadow--8dp">
+				<span class="mdl-layout-title" style="color: white;"> AAEV 2.0 / Docente {{docente.nombre}} {{docente.apellido}}</span>
+				<div class="mdl-layout-spacer"></div>
+				<nav class="mdl-navigation">
+					<a id="botonInicio" style="color: white" class="mdl-navigation__link" 
+					href="{% url 'aaev:inicioDocente' %} "> Inicio </a>
+				<form method="POST" action="{% url 'aaev:cerrarSesion'%}" name="form"  id="form">
+				{% csrf_token %}
+					<a id="boton" style="color: white; height: 50px;" class="mdl-navigation__link" onclick="cerrarSesion()" href="#">Cerrar sesi&#243;n</a>
+				</form>
+				</nav>
+			</div>
+		</header>
+		<main class="mdl-layout__content" style="text-align: -webkit-center;" id="cuerpo">
+			<div class="page-content " style="margin-top: 6%">
+			<div class="demo-card-wide mdl-card mdl-shadow--8dp">
+				<div class="mdl-card__title mdl-card--expand">
+					<h5 class="mdl-card__title-text">{{materia.nombre}}: Lista de Unidades</h5>
+				</div>
+				<div class="mdl-card__supporting-text" id="cuerpoTarjetaUnidades">
+					<div id="vacio">
+					{% if messages %}
+						{% for message in messages %}
+							<h4 class="{{message.tags}}"> {{message}} </h4>
+						{% endfor %}
+					{% endif %}
+					</div>
+					<div id="mensajeEliminar" style="display: none;">
+						<h4 class="success" id="success" style="font-size: 16px; color: green"></h4>
+					</div>
+					{% if unidades %}
+						<table class="mdl-data-table mdl-js-data-table" id="tablaUnidades">
+							<thead><!-- tabla encabezado-->
+								<tr><!-- FILA-->
+									<th>Nombre de la Unidad</th>
+									<th colspan="2" style="text-align: center;"> Acciones </th>
+								</tr>
+							</thead>
+							<tbody><!-- tabla Cuerpo-->			
+								{% for unidad in unidades %}
+								<tr style="text-align: center"; return false;" id="{{unidad.idunidad}}">
+									<td class="mdl-data-table-cel--non-numeric" id="n{{unidad.idunidad}}" style="text-align: -webkit-center;">{{unidad.nombre}}</td>
+									<div class="mdl-layout-spacer"></div>
+									<td class="mdl-data-table-cel--non-numeric" style="text-align: -webkit-center;"> <button class="mdl-button mdl-js-button" onclick="editarUnidad(event,{{unidad.idunidad}}, document.getElementById('n{{unidad.idunidad}}').innerText )"> <i class="material-icons md-36 md-green">mode_edit</i> </button> </td>
+									<td class="mdl-data-table-cel--non-numeric" style="text-align: -webkit-center;"> <button class="mdl-button mdl-js-button" onclick="dialogo(event,{{unidad.idunidad}})"> <i class="material-icons md-36 md-red">highlight_off</i> </button> 
+									 </td>
+									<!--
+									<td>
+										<form method="POST" action="#">
+										<input type="submit" class="iconoAgregar" id="bajaAp" name="bajaAp"/>
+										</form>
+									</td>
+									<td>
+										<form method="POST" action="#">
+										<input type="submit" id="editarAp" name="editarAp" value="" />
+										</form>
+									</td>
+									-->
+								</tr>
+								{% endfor %}
+							{% else %}
+								<h4> No hay unidades en esta materia </h4>
+							{% endif %}
+						</tbody>
+					</table>
+				</div> <!--supporting text -->
+			</div> <!-- tarjeta lista de unidades -->
+			<div class="demo-card-wide mdl-card mdl-shadow--8dp" style="margin-top: 5%; margin-bottom: 5%;">
+				<div class="mdl-card__title mdl-card--expand">
+					<h5 class="mdl-card__title-text">Agregar unidades</h5>
+				</div>
+				<div class="mdl-card__supporting-text" style="text-align: -webkit-center;">
+					<form name="agregarUnidad" id="agregarUnidad" method="POST">
+						{% csrf_token %}
+						<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+							<input type="text" class="mdl-textfield__input" id="nombre" name="nombre" autocomplete="off"/>
+							<label for="nombre" class="mdl-textfield__label">Nombre de la unidad</label>
+						</div>
+							<button class="mdl-button mdl-js-button" id="agregar" name="agregar">Agregar unidad</button>
+					</form>
+					<div>
+						<h4 id="errorUnidad" style="display: none; color: red; font-size: 16px;">Ingresa un nombre para la unidad</h4>
+					</div>
+					<div id="mensaje" class="success">
+						<h4 style="font-size: 16px;"> </h4>
+					</div>
+				</div> <!--supporting text -->
+			</div> 
+	</main>
+</div>
+
+	<input type="hidden" name="idmateria" id="idmateria" value="{{materia.idmateria}}"></input>
+	<input type="hidden" name="unidadEditarId" id="idUnidadEditarId" value=""></input>
+	<input type="hidden" name="unidadEditarNombre" id="idUnidadEditarNombre" value=""></input>
+
+<dialog class="mdl-dialog">
+  <h4 class="mdl-dialog__title" id="tituloDialogo">Eliminar </h4>
+  <div class="mdl-dialog__content">
+    <p id="cuerpoDialogo">
+      ¿Seguro que quer&eacute;s eliminar esta unidad? Se borraran tambien las preguntas y examenes que la contengan.
+    </p>
+    <input type="hidden" id="idUnidadBaja" name="idUnidadBaja" value=""/>
+  </div>
+  <div class="mdl-dialog__actions">
+    <button type="button" onclick="eliminarUnidad(event)" class="mdl-button confirmar" style="color: green;" >Confirmar</button>
+    <button type="button" class="mdl-button cancelar" style="color: red;" >Cancelar</button>
+  </div>
+</dialog>
+
+
+</body>
+</html>
+

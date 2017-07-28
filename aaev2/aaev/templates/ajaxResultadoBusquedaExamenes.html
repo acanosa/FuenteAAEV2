@@ -1,0 +1,35 @@
+<html>
+<body>
+<div>
+	<table id="tablaResultadosBusqueda" align="center" class="mdl-data-table mdl-js-data-table" style="margin-bottom: 5%;">
+ 		<tr>
+ 			<th class="mdl-data-table--cel-non-numeric" style="text-align: center;">Nombre</th>
+ 			<th>Duraci&oacute;n</th>
+ 			<th>Cantidad de preguntas</th>
+ 			<th style="text-align:center">Unidades</th>
+ 			<th style="text-align:center">Acciones</th>
+ 		</tr>
+ 		{% for examen in examenesBusqueda %}	
+				<tr>
+					<td class="mdl-data-table--cel-non-numeric" id="{{examen.idexamen}}nombreExamenB">{{examen.nombre}}</td>
+					<td class="mdl-data-table--cel-non-numeric" id="{{examen.idexamen}}duracionExamenB">{{examen.tiempoLimite}}</td>
+					<td style="text-align:center" class="mdl-data-table--cel-non-numeric" id="{{examen.idexamen}}cantidadPreguntasExamenB">{{examen.totalpreguntas}}</td>
+					<td class="mdl-data-table--cel-non-numeric" id="{{examen.idexamen}}UnidadesExamenB">
+						{% for nombre in examen|getUnidadesExamen %} 
+							<div style="text-align: center;">
+								{{nombre}}
+							</div>
+						{% endfor %}
+
+					</td>
+					<td class="mdl-data-table--cel-non-numeric" id="verExamen{{examen.idexamen}}">
+						<button class="mdl-button mdl-js-button mdl-button--ripple-effect mdl-shadow--8dp" onclick="verDetallesExamen(event,{{examen.idexamen}}, '{{examen.descripcion}}' )">Hacer</button>
+					</td>
+				</tr>
+		{% endfor %}
+	</table>
+
+	<button class="mdl-button mdl-js-button mdl-button--ripple-effect mdl-shadow--8dp" style="margin-bottom: 5%;" id="mostrarTodos">Mostrar todos los ex&aacute;menes</button>
+</div>
+</body>
+</html>

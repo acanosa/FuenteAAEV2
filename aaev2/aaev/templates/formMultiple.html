@@ -1,0 +1,169 @@
+<html>
+<script type="text/javascript">
+
+	$(document).ready(function(){
+		var contador = document.getElementsByName('tr').size();
+
+		$("#AgregarOtra").click(function(event){
+			event.preventDefault();
+			contador++;
+			var tabla = $("#tablaRespuestas");
+
+			var tr = $("<tr></tr>");
+			var td1 = $("<td></td>").text('F');
+			var td2 = $("<td></td>");
+			tr.append(td1);
+			tr.append(td2);
+			var div= $("<div></div>");
+			
+			var input = $("<input type='text' id='opcion"+ contador +"'></input>");
+			var label = $("<label for='opcion"+ contador +"'></label").text("Texto de la respuesta");
+			div.append(input);
+			div.append(label);
+			div.addClass("mdl-textfield mdl-js-textfield mdl-textfield--floating-label");
+			input.addClass("mdl-textfield__input");
+			label.addClass("mdl-textfield__label");
+			td1.addClass("mdl-data-table-cel--non-numeric");
+			td2.addClass("mdl-data-table-cel--non-numeric");
+			td2.append(div);
+
+			tabla.append(tr);
+			componentHandler.upgradeAllRegistered();
+
+		})
+
+	});
+	function agregarALista(source){
+		var i = 0;
+		var listaCorrectas = document.getElementsByName("correctas[]");
+		var listaIncorrectas = document.getELementsByName("incorrectas[]");
+		console.log("Antes correctas: " + listaCorrectas.length);
+		console.log("Antes incorrectas: " + listaIncorrectas.length);
+		if (source.checked){
+			for(i=0;i<listaIncorrectas.length;i++){
+				if (source.id == listaIncorrectas[i].value){
+					listaIncorrectas[i].remove();
+					var input = $("<input type='hidden' name='correctas[]' value='" + source.value + "'");
+					$("#correctas").append(input);
+				}
+			}
+			console.log("Despues correctas:" + listaCorrectas.length);
+			console.log("Despues incorrectas: " + listaIncorrectas.length);
+		}else{
+			for(i=0;i<listaCorrectas.length;i++){
+				if (source.id == listaCorrectas[i].value){
+					listaCorrectas[i].remove();
+					var input = $("<input type='hidden' name='incorrectas[]' value='" + source.value + "'");
+					$("#incorrectas").append(input);
+				}
+			}
+			console.log("Despues correctas:" + listaCorrectas.length);
+			console.log("Despues incorrectas: " + listaIncorrectas.length);
+		}
+	}
+	/*
+	*/
+	function agregarOtraCorrecta(event){
+		event.preventDefault();
+		var lista = document.getElementsByName("respuestasCorrectas[]");
+		console.log(lista);
+		contador = lista.length + 1;
+		console.log(contador);
+		var tabla = $("#tablaCorrectas");
+		var tr = $("<tr></tr>");
+		var td2 = $("<td></td>");
+		tr.append(td2);
+		var div= $("<div></div>");
+		
+		var input = $("<input type='text' name='respuestasCorrectas[]' id='correcta"+ contador +"'></input>");
+		var label = $("<label for='correcta"+ contador +"'></label").text("Texto de la respuesta correcta");
+		div.append(input);
+		div.append(label);
+		div.addClass("mdl-textfield mdl-js-textfield mdl-textfield--floating-label");
+		input.addClass("mdl-textfield__input");
+		label.addClass("mdl-textfield__label");
+		td2.addClass("mdl-data-table-cel--non-numeric");
+		td2.append(div);
+		tabla.append(tr);
+		componentHandler.upgradeAllRegistered();
+	}
+
+	function agregarOtraIncorrecta(event){
+		event.preventDefault();
+		var lista = document.getElementsByName("respuestasIncorrectas[]");
+		console.log(lista);
+		contador = lista.length + 1;
+		console.log(contador);
+		var tabla = $("#tablaIncorrectas");
+		var tr = $("<tr></tr>");
+		var td2 = $("<td></td>");
+		tr.append(td2);
+		var div= $("<div></div>");
+		
+		var input = $("<input type='text' name='respuestasIncorrectas[]' id='incorrecta"+ contador +"'></input>");
+		var label = $("<label for='incorrecta"+ contador +"'></label").text("Texto de la respuesta incorrecta");
+		div.append(input);
+		div.append(label);
+		div.addClass("mdl-textfield mdl-js-textfield mdl-textfield--floating-label");
+		input.addClass("mdl-textfield__input");
+		label.addClass("mdl-textfield__label");
+		td2.addClass("mdl-data-table-cel--non-numeric");
+		td2.append(div);
+		tabla.append(tr);
+		componentHandler.upgradeAllRegistered();
+	}
+
+</script>
+<body>
+	<div id="formMultipleChoice" style="text-align: -webkit-center;">
+		<table class="mdl-data-table mdl-js-data-table" id="tablaCorrectas">
+			<tr>
+			<th style="text-align: -webkit-center;">RESPUESTAS CORRECTAS</th>
+			</tr>
+			<tr>
+				<td class="mdl-data-table-cel--non-numeric">
+					<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label " style="align: -webkit-center;">
+						<input type="text" class="mdl-textfield__input" id="correcta1" name="respuestasCorrectas[]" autocomplete="off"/>
+						<label for="correcta1" class="mdl-textfield__label">Texto de la respuesta correcta </label>
+					</div>
+				</td>
+			</tr>
+		</table>
+		<div style="align: -webkit-center; margin-bottom: 2%;margin-top: 2%;">
+			<button class="mdl-button mdl-js-button" onclick="agregarOtraCorrecta(event);" id="AgregarOtra" >Agregar otra Respuesta correcta</button>
+		</div>
+
+		<table class="mdl-data-table mdl-js-data-table" id="tablaIncorrectas">
+			<tr>
+			<th style="text-align: -webkit-center;">RESPUESTAS INCORRECTAS</th>
+			</tr>
+			<tr>
+				<td class="mdl-data-table-cel--non-numeric">
+					<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label " style="align: -webkit-center;">
+						<input type="text" class="mdl-textfield__input" id="incorrecta1" name="respuestasIncorrectas[]" autocomplete="off"/>
+						<label for="incorrecta1" class="mdl-textfield__label">Texto de la respuesta incorrecta</label>
+					</div>
+				</td>
+			</tr>
+		</table>
+
+		<div style="align: -webkit-center; margin-bottom: 2%;margin-top: 2%;">
+			<button class="mdl-button mdl-js-button" onclick="agregarOtraIncorrecta(event);" id="AgregarOtra" >Agregar otra Respuesta incorrecta</button>
+		</div>
+	</div>
+
+	
+
+	<div id="correctas">
+	<input type="hidden" id="respuestaObligatoria" name="correctas[]" value=""/>
+	</div>
+
+	<div id="incorrectas">
+	<input type="hidden" name="incorrectas[]" value=""/>
+	<input type="hidden" name="incorrectas[]" value=""/>
+	</div>
+</body>
+
+
+
+</html>
